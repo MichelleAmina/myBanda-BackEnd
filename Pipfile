@@ -17,6 +17,15 @@ flask-jwt-extended = "*"
 jwt = "*"
 sqlalchemy-serializer = "*"
 importlib-resources = "*"
+Flask-Cors = "*"
+psycopg2-binary = "*"
+gunicorn = "*"
+honcho = "*"
+Werkzeug = "*"
+
+
+
+python-dotenv = "*"
 
 [dev-packages]
 
