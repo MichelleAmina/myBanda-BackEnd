@@ -23,6 +23,7 @@ gunicorn = "*"
 honcho = "*"
 Werkzeug = "*"
 importlib-metadata = "*"
+Faker = "*"
 
 
 
