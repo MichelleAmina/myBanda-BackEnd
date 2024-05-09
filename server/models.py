@@ -7,7 +7,8 @@ class User(db.Model, SerializerMixin):
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     _password_hash = db.Column(db.String(255), nullable=False)
-    location = db.Column(db.String(250), nullable=False )
+    location = db.Column(db.String(250), nullable=True )
+    contact = db.Column(db.String(50), nullable=True)
     role = db.Column(db.String, nullable=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
 
     # Additional fields for Banda Admin and Delivery
