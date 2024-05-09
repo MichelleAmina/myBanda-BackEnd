@@ -9,13 +9,14 @@ class SignUp(Resource):
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
+        location = data.get('location')
         role = data.get('role')
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             return {'message': 'User with this email already exists'}, 400
 
-        user = User(username=username, email=email, role=role)
+        user = User(username=username, email=email, location=location ,role=role)
         user.password_hash = password
         db.session.add(user)
         db.session.commit()
