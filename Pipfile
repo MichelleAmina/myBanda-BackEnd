@@ -16,7 +16,7 @@ pyjwt = "*"
 flask-jwt-extended = "*"
 jwt = "*"
 sqlalchemy-serializer = "*"
-faker = "*"
+importlib-resources = "*"
 
 [dev-packages]
 

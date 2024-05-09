@@ -1,11 +1,9 @@
 from faker import Faker
-from models import db, User, Shop, Product, Order, OrderItem, Review
-from app import app
+from models import User, Shop, Product, Order, OrderItem, Review
+from config import app, db
 
 
 fake = Faker()
-
-db.init_app(app)
 
 # Function to generate fake data for users
 def generate_users(num_users):

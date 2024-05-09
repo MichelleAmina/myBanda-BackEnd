@@ -1,25 +1,7 @@
-from flask import Flask, request, jsonify
-from flask_restful import Api, Resource
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
-from models import db, User
+from models import User
 from seed import seed_database
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
-from jwt.exceptions import DecodeError
-import os
-
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DATABASE = os.environ.get(
-    "DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'hjtvgh546h3gv4'  
-jwt = JWTManager(app)
-api = Api(app)  
-
-db.init_app(app)
-
+from config import app, db, Flask, request, jsonify, Resource, api, make_response
+# JWTManager, create_access_token, jwt_required, DecodeError, 
 
 class SignUp(Resource):
     def post(self):
@@ -51,9 +33,20 @@ class Login(Resource):
 
         access_token = create_access_token(identity=user.id)
         return {'message': 'Login successful', 'access_token': access_token}, 200
+    
+class Hello(Resource):
+    def get(self):
+        hello = 'Hello World!'
+        return make_response(
+            hello,
+            200
+        )
 
 api.add_resource(SignUp, '/signup')
 api.add_resource(Login, '/login')
+api.add_resource(Hello, '/hello')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
+# from config import app, db, api, request, session, Resource

@@ -1,9 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import validates
-from sqlalchemy_serializer import SerializerMixin
+from config import db, SQLAlchemy, validates, SerializerMixin
 
-
-db= SQLAlchemy()
 
 # User class with details obtained on registration 
 class User(db.Model, SerializerMixin):
@@ -117,3 +113,6 @@ class Review(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
+
+
+# from config import db, SerializerMixin
