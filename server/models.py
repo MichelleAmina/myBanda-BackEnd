@@ -1,4 +1,4 @@
-from config import db, SQLAlchemy, validates, SerializerMixin
+from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt
 
 
 # User class with details obtained on registration 
@@ -6,7 +6,7 @@ class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    _password_hash = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String, nullable=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
 
     # Additional fields for Banda Admin and Delivery
@@ -22,6 +22,17 @@ class User(db.Model, SerializerMixin):
     reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
     reviews_received = db.relationship('Review', backref='seller', foreign_keys='Review.seller_id', lazy=True)
 
+    @hybrid_property
+    def password_hash(self):
+        raise Exception('Cannot view password')
+
+    @password_hash.setter
+    def password_hash(self, password):
+        hashed_password = bcrypt.generate_password_hash(password.encode('utf-8'))
+        self._password_hash = hashed_password.decode('utf-8')
+        
+    def authenticate(self, password):
+        return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
 
     def __repr__(self):

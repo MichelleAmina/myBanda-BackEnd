@@ -15,7 +15,8 @@ class SignUp(Resource):
         if existing_user:
             return {'message': 'User with this email already exists'}, 400
 
-        user = User(username=username, email=email, password=password, role=role)
+        user = User(username=username, email=email, role=role)
+        user.password_hash = password
         db.session.add(user)
         db.session.commit()
 

@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
+from sqlalchemy.ext.hybrid import hybrid_property
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 import datetime
