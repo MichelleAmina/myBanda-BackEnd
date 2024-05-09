@@ -29,11 +29,12 @@ class Login(Resource):
         password = data.get('password')
 
         user = User.query.filter_by(email=email).first()
-        if not user or not user.check_password(password):
+        if not user or not user.authenticate(password):
             return {'message': 'Invalid email or password'}, 401
+        return {'msg' : 'sucess'}, 200
 
-        access_token = create_access_token(identity=user.id)
-        return {'message': 'Login successful', 'access_token': access_token}, 200
+        # access_token = create_access_token(identity=user.id)
+        # return {'message': 'Login successful', 'access_token': access_token}, 200
     
 class Hello(Resource):
     def get(self):
@@ -43,7 +44,7 @@ class Hello(Resource):
             200
         )
 
-api.add_resource(SignUp, '/signup')
+api.add_resource(SignUp, '/signup' )
 api.add_resource(Login, '/login')
 api.add_resource(Hello, '/hello')
 
