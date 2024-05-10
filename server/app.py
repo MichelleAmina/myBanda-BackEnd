@@ -1,7 +1,7 @@
 from models import User
 from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response
-# JWTManager, create_access_token, jwt_required, DecodeError, 
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required
+
 
 class SignUp(Resource):
     def post(self):
@@ -33,10 +33,9 @@ class Login(Resource):
         user = User.query.filter_by(email=email).first()
         if not user or not user.authenticate(password):
             return {'message': 'Invalid email or password'}, 401
-        return {'msg' : 'sucess'}, 200
 
-        # access_token = create_access_token(identity=user.id)
-        # return {'message': 'Login successful', 'access_token': access_token}, 200
+        access_token = create_access_token(identity=user.id)
+        return {'message': 'Login successful', 'access_token': access_token}, 200
     
 class Hello(Resource):
     def get(self):

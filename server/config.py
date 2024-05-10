@@ -10,12 +10,18 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 import datetime
 import os
-
-# from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 # from jwt.exceptions import DecodeError
+
+
+
 
 from dotenv import load_dotenv
 load_dotenv()  
+
+
+# BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+# DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
 
 
 app = Flask(__name__)
@@ -34,7 +40,7 @@ metadata = MetaData(naming_convention={
 db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)
 db.init_app(app)
-# jwt = JWTManager(app)
+jwt = JWTManager(app)
 api = Api(app)
 bcrypt = Bcrypt(app)
 CORS(app)

@@ -12,9 +12,6 @@ flask-restful = "*"
 flask-cors = "*"
 bcrypt = "*"
 flask-bcrypt = "*"
-pyjwt = "*"
-flask-jwt-extended = "*"
-jwt = "*"
 sqlalchemy-serializer = "*"
 importlib-resources = "*"
 Flask-Cors = "*"
@@ -24,11 +21,8 @@ honcho = "*"
 Werkzeug = "*"
 importlib-metadata = "*"
 Faker = "*"
-
-
-
-
 python-dotenv = "*"
+Flask-JWT-Extended = "*"
 
 [dev-packages]
 
