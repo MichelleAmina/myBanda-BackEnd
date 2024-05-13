@@ -18,7 +18,7 @@ class User(db.Model, SerializerMixin):
 
     # Relationship for shop
     # A user, specifically a seller will have a shop 
-    shop = db.relationship('Shop', backref='owner', uselist=False, cascade="all, delete-orphan", lazy=True)
+    shop = db.relationship('Shop', back_populates='seller', uselist=False, cascade="all, delete-orphan", lazy=True)
 
     # Relationships for reviews
     reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
@@ -52,9 +52,12 @@ class Shop(db.Model, SerializerMixin):
 
     # A shop belongs to a seller 
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    seller = db.relationship('User', back_populates='shop')
+
 
     # A shop can have many products 
-    products = db.relationship('Product', backref='shop', lazy=True, cascade="all, delete-orphan")
+    products = db.relationship('Product', back_populates='shop', lazy=True, cascade="all, delete-orphan")
+    serialize_rules = ('-products.shop', '-seller.shop')
 
     def __repr__(self):
         return f'<Shop {self.name} owned by {self.seller_id}>'
@@ -72,14 +75,13 @@ class Product(db.Model, SerializerMixin):
     category = db.Column(db.String, nullable=False) 
 
     # Additiona columns to know seller of products as well as shop associated with product
-    # The shop belongs to the seller 
-    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     shop_id = db.Column(db.Integer, db.ForeignKey('shop.id'), nullable=False)
+    shop = db.relationship('Shop', back_populates='products')
 
     orders = db.relationship('OrderItem', backref='product', lazy=True, cascade="all, delete-orphan")
 
     images = db.relationship('ProductsImages', back_populates='product', cascade="all, delete-orphan")
-    serialize_rules = ('-images.product',)
+    serialize_rules = ('-images.product', '-shop.products')
 
     # Relationship for reviews
     reviews = db.relationship('Review', backref='product', lazy=True, cascade="all, delete-orphan")

@@ -1,4 +1,4 @@
-from models import User, Product, ProductsImages
+from models import User, Product, ProductsImages, Shop
 # from seed import seed_database
 from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required
 import json
@@ -6,7 +6,7 @@ import json
 
 class SignUp(Resource):
     def post(self):
-        data = request.get_json()[0]
+        data = request.get_json()
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
@@ -60,10 +60,10 @@ class Products(Resource):
         # image_url = data.get('image_url')
         quantity_available = data.get('quantity_available')
         category = data.get('category')
-        seller_id = data.get('seller_id')
+        # seller_id = data.get('seller_id')
         shop_id = data.get('shop_id')
 
-        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, seller_id=seller_id, shop_id=shop_id) 
+        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
         db.session.add(product)
         db.session.commit()
 
@@ -91,7 +91,7 @@ class Images(Resource):
             200
         )
     
-class Shop(Resource):
+class Shops(Resource):
     def post(self):
         data = request.get_json()
 
@@ -123,6 +123,7 @@ api.add_resource(SignUp, '/signup' )
 api.add_resource(Login, '/login')
 api.add_resource(Hello, '/hello')
 api.add_resource(Images, '/images')
+api.add_resource(Shops, '/shop')
 
 
 
