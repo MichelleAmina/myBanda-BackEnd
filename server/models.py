@@ -66,7 +66,7 @@ class Product(db.Model, SerializerMixin):
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String, nullable=False)
+    # image_url = db.Column(db.String, nullable=False)
     quantity_available = db.Column(db.Integer, nullable=False)
     # Add this column for product category
     category = db.Column(db.String, nullable=False) 
@@ -78,11 +78,21 @@ class Product(db.Model, SerializerMixin):
 
     orders = db.relationship('OrderItem', backref='product', lazy=True, cascade="all, delete-orphan")
 
+    images = db.relationship('ProductsImages', back_populates='product', cascade="all, delete-orphan")
+    serialize_rules = ('-images.product',)
+
     # Relationship for reviews
     reviews = db.relationship('Review', backref='product', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
+    
+class ProductsImages(db.Model, SerializerMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    image_url = db.Column(db.String)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+
+    product = db.relationship('Product', back_populates='images')
 
 
 # Table for orders placed 
