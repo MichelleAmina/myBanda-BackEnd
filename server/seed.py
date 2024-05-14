@@ -6,6 +6,8 @@ from config import app, db
 fake = Faker()
 
 with app.app_context():
+    User.query.delete()
+    Shop.query.delete()
     Product.query.delete()
     ProductsImages.query.delete()
     db.session.commit()

@@ -60,10 +60,10 @@ class Products(Resource):
         # image_url = data.get('image_url')
         quantity_available = data.get('quantity_available')
         category = data.get('category')
-        seller_id = data.get('seller_id')
+        # seller_id = data.get('seller_id')
         shop_id = data.get('shop_id')
 
-        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, seller_id=seller_id, shop_id=shop_id) 
+        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
         db.session.add(product)
         db.session.commit()
 
@@ -123,6 +123,7 @@ api.add_resource(SignUp, '/signup' )
 api.add_resource(Login, '/login')
 api.add_resource(Hello, '/hello')
 api.add_resource(Images, '/images')
+api.add_resource(Shop, '/shop')
 
 
 
