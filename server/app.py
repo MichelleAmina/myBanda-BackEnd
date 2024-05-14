@@ -1,4 +1,4 @@
-from models import User, Product, ProductsImages
+from models import User, Product, ProductsImages, Shop
 # from seed import seed_database
 from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required
 import json
@@ -6,7 +6,7 @@ import json
 
 class SignUp(Resource):
     def post(self):
-        data = request.get_json()[0]
+        data = request.get_json()
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
@@ -91,7 +91,7 @@ class Images(Resource):
             200
         )
     
-class Shop(Resource):
+class Shops(Resource):
     def post(self):
         data = request.get_json()
 
@@ -123,7 +123,7 @@ api.add_resource(SignUp, '/signup' )
 api.add_resource(Login, '/login')
 api.add_resource(Hello, '/hello')
 api.add_resource(Images, '/images')
-api.add_resource(Shop, '/shop')
+api.add_resource(Shops, '/shop')
 
 
 
