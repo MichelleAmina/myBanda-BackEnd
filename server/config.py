@@ -14,16 +14,8 @@ from flask_session import Session
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 # from jwt.exceptions import DecodeError
 
-
-
-
 from dotenv import load_dotenv
 load_dotenv()  
-
-
-# BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-# DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
