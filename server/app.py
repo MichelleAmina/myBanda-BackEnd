@@ -1,7 +1,8 @@
-from models import User, Product, ProductsImages, Shop
+from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session
 import json
+
 
 
 class SignUp(Resource):
@@ -34,6 +35,10 @@ class Login(Resource):
         user = User.query.filter_by(email=email).first()
         if not user or not user.authenticate(password):
             return {'message': 'Invalid email or password'}, 401
+        
+        # storing the session in the user Id
+        session['user_id'] = user.id
+
 
         access_token = create_access_token(identity=user.id)
         return {'message': 'Login successful', 'access_token': access_token}, 200
@@ -110,6 +115,122 @@ class Shops(Resource):
             200
         )
 
+class Orders(Resource):
+    # @jwt_required()
+    def get(self):
+        # user_id = session.get('user_id')
+        
+        # if not user_id:
+        # return {'message': 'User not logged in'}, 401
+        
+        orders = [order.to_dict() for order in Order.query.all()]
+        if not orders:
+            return {"message": "Orders are not added"}, 404
+
+        return make_response(
+            orders, 
+            200
+            )
+    
+    # @jwt_required()
+    def post(self):
+        # user_id = session.get('user_id')
+        # if not user_id:
+        #     return {'message': 'User not logged in'}, 401
+        
+        
+        data = request.get_json()
+        user_id = data.get('user_id')
+        total_price = data.get('total_price')
+        status = data.get('status')
+        delivery_fee = data.get('delivery_fee')
+        delivery_address = data.get('delivery_address')
+
+        order = Order(user_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address)
+        db.session.add(order)
+        db.session.commit()
+
+        return make_response(
+            order.to_dict(), 
+            201
+            )
+
+
+class OrderItems(Resource):
+    # @jwt_required()
+    def get(self):
+        order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
+        
+        if not order_items:
+            return {"message": "Order Items are not added"}, 404
+
+        return make_response(
+            order_items, 
+            200
+            )
+    
+    # @jwt_required()
+    def post(self):
+        # user_id = session.get('user_id')
+        # if not user_id:
+        #     return {'message': 'User not logged in'}, 401
+        
+        data = request.get_json()
+        order_id = data.get('order_id')
+        product_id = data.get('product_id')
+        quantity = data.get('quantity')
+
+        order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity)
+        db.session.add(order_item)
+        db.session.commit()
+
+        return make_response(
+            order_item.to_dict(), 
+            201
+            )
+
+
+
+class Reviews(Resource):
+    # @jwt_required()
+    def get(self):
+        reviews = [review.to_dict() for review in Review.query.all()]
+        
+        if not reviews:
+            return {"message": "Reviews not yet added"}, 404
+
+        return make_response(
+            reviews, 
+            200
+            )
+    
+    # @jwt_required()
+    def post(self):
+        # user_id = session.get('user_id')
+        # if not user_id:
+        #     return {'message': 'User not logged in'}, 401
+        
+        
+        
+        data = request.get_json()
+        content = data.get('content')
+        rating = data.get('rating')
+        buyer_id = data.get('buyer_id')
+        seller_id = data.get('seller_id')
+        product_id = data.get('product_id')
+
+        review = Review(content=content, buyer_id=buyer_id, seller_id=seller_id, product_id=product_id, rating=rating)
+        db.session.add(review)
+        db.session.commit()
+
+        return make_response(
+            review.to_dict(), 
+            201
+            )
+
+        
+
+
 class Hello(Resource):
     def get(self):
         hello = 'Hello World!'
@@ -124,6 +245,9 @@ api.add_resource(Login, '/login')
 api.add_resource(Hello, '/hello')
 api.add_resource(Images, '/images')
 api.add_resource(Shops, '/shop')
+api.add_resource(Orders, '/order')
+api.add_resource(OrderItems, '/orderitems')
+api.add_resource(Reviews, '/review')
 
 
 

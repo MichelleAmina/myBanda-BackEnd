@@ -23,6 +23,7 @@ importlib-metadata = "*"
 Faker = "*"
 python-dotenv = "*"
 Flask-JWT-Extended = "*"
+flask-session = "*"
 
 [dev-packages]
 

@@ -103,7 +103,8 @@ class Order(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String, nullable=False)  # e.g., 'pending', 'shipped', 'delivered'
-
+    delivery_fee = db.Column(db.String)
+    
     # Additional field for delivery information, such as address
     delivery_address = db.Column(db.String, nullable=False)
 
@@ -119,6 +120,8 @@ class Order(db.Model, SerializerMixin):
 class OrderItem(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
+    
+    serialize_rules = ('-order', '-product')
 
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
@@ -131,6 +134,7 @@ class OrderItem(db.Model, SerializerMixin):
 class Review(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer)
 
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

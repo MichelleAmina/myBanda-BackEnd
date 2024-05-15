@@ -10,6 +10,7 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 import datetime
 import os
+from flask_session import Session
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 # from jwt.exceptions import DecodeError
 
@@ -29,8 +30,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = b'\x9d~\xaejx\xfe\xc5\xa1\xf6\xaa\x31\xdb\xb0k\xf7\x9d'
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(hours=1)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(hours=72)
 app.config['JWT_COOKIE_SECURE'] = False
+app.config['SESSION_TYPE'] = 'filesystem' 
 app.json.compact = False
 
 metadata = MetaData(naming_convention={
@@ -44,5 +46,7 @@ jwt = JWTManager(app)
 api = Api(app)
 bcrypt = Bcrypt(app)
 CORS(app)
+Session(app)
+
 
 
