@@ -171,9 +171,9 @@ class OrderItems(Resource):
     
     @jwt_required()
     def post(self):
-        # user_id = session.get('user_id')
-        # if not user_id:
-        #     return {'message': 'User not logged in'}, 401
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'message': 'User not logged in'}, 401
         
         data = request.get_json()
         order_id = data.get('order_id')
@@ -192,7 +192,7 @@ class OrderItems(Resource):
 
 
 class Reviews(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
         reviews = [review.to_dict() for review in Review.query.all()]
         
@@ -204,11 +204,11 @@ class Reviews(Resource):
             200
             )
     
-    # @jwt_required()
+    @jwt_required()
     def post(self):
-        # user_id = session.get('user_id')
-        # if not user_id:
-        #     return {'message': 'User not logged in'}, 401
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'message': 'User not logged in'}, 401
         
         
         

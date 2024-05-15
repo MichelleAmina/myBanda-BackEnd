@@ -23,6 +23,9 @@ class User(db.Model, SerializerMixin):
     # Relationships for reviews
     reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
     reviews_received = db.relationship('Review', backref='seller', foreign_keys='Review.seller_id', lazy=True)
+    
+    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash')
+
 
     @hybrid_property
     def password_hash(self):
@@ -81,7 +84,7 @@ class Product(db.Model, SerializerMixin):
     orders = db.relationship('OrderItem', backref='product', lazy=True, cascade="all, delete-orphan")
 
     images = db.relationship('ProductsImages', back_populates='product', cascade="all, delete-orphan")
-    serialize_rules = ('-images.product', '-shop.products')
+    serialize_rules = ('-images.product', '-shop.products', '-reviews.product')
 
     # Relationship for reviews
     reviews = db.relationship('Review', backref='product', lazy=True, cascade="all, delete-orphan")
@@ -139,6 +142,8 @@ class Review(db.Model, SerializerMixin):
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    
+    serialize_rules = ('-buyer.reviews_given', '-seller.reviews_received', '-product.reviews')
 
     def __repr__(self):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
