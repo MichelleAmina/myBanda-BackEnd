@@ -116,12 +116,12 @@ class Shops(Resource):
         )
 
 class Orders(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
-        # user_id = session.get('user_id')
+        user_id = session.get('user_id')
         
-        # if not user_id:
-        # return {'message': 'User not logged in'}, 401
+        if not user_id:
+            return {'message': 'User not logged in'}, 401
         
         orders = [order.to_dict() for order in Order.query.all()]
         if not orders:
@@ -132,11 +132,11 @@ class Orders(Resource):
             200
             )
     
-    # @jwt_required()
+    @jwt_required()
     def post(self):
-        # user_id = session.get('user_id')
-        # if not user_id:
-        #     return {'message': 'User not logged in'}, 401
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'message': 'User not logged in'}, 401
         
         
         data = request.get_json()
@@ -157,7 +157,7 @@ class Orders(Resource):
 
 
 class OrderItems(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
         order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
         
@@ -169,7 +169,7 @@ class OrderItems(Resource):
             200
             )
     
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         # user_id = session.get('user_id')
         # if not user_id:
