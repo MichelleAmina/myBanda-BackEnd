@@ -49,11 +49,13 @@ class Products(Resource):
         
         products = [product.to_dict() for product in Product.query.all()]
 
+        product = Product.query.filter(Product.id == 1).first()
+
         if not products:
             return {"message":"Add products!"}, 404
 
         return make_response(
-            products,
+            product.to_dict(),
             200
         )
     
@@ -97,6 +99,21 @@ class Images(Resource):
         )
     
 class Shops(Resource):
+
+    def get(self):
+    
+        shops = [shops.to_dict() for shops in Shop.query.all()]
+
+        shop = Shop.query.filter(Shop.id == 1).first()
+
+        if not shops:
+            return {"message":"No shops!"}, 404
+
+        return make_response(
+            shop.to_dict(),
+            200
+        )
+
     def post(self):
         data = request.get_json()
 
@@ -195,7 +212,7 @@ class OrderItems(Resource):
 
 
 class Reviews(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         reviews = [review.to_dict() for review in Review.query.all()]
         

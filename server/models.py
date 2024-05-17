@@ -56,7 +56,7 @@ class Shop(db.Model, SerializerMixin):
     # A shop can have many products 
     products = db.relationship('Product', back_populates='shop', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-products.shop', '-seller.shop')
+    serialize_rules = ('-products.shop', '-seller.reviews_received', '-seller.shop')
 
     def __repr__(self):
         return f'<Shop {self.name} owned by {self.seller_id}>'
@@ -77,7 +77,7 @@ class Product(db.Model, SerializerMixin):
     images = db.relationship('ProductsImages', back_populates='product', lazy='select', cascade="all, delete-orphan")
     reviews = db.relationship('Review', back_populates='product', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-shop.products', '-items.product', '-images.product', '-reviews.product')
+    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product')
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
@@ -150,7 +150,7 @@ class Review(db.Model, SerializerMixin):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     product = db.relationship('Product', back_populates='reviews', lazy='joined')
     
-    serialize_rules = ('-buyer.reviews_given', '-seller.reviews_received', '-product.reviews')
+    serialize_rules = ('-buyer.reviews_given','-buyer.my_orders', '-seller','-product.reviews')
 
     def __repr__(self):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
