@@ -1,8 +1,8 @@
-"""New initial migration after error from relationship of user with both buyer and delivery in order
+"""New initial migration after going to hell with order being related with 2 users, buyer and delivery guy
 
-Revision ID: 2eb835ed1bff
+Revision ID: 18a4fb017bad
 Revises: 
-Create Date: 2024-05-17 11:03:09.324441
+Create Date: 2024-05-17 11:48:24.557900
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2eb835ed1bff'
+revision = '18a4fb017bad'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,15 +34,14 @@ def upgrade():
     )
     op.create_table('order',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('buyer_id', sa.Integer(), nullable=False),
     sa.Column('total_price', sa.Float(), nullable=False),
     sa.Column('status', sa.String(), nullable=False),
     sa.Column('delivery_fee', sa.String(), nullable=True),
-    sa.Column('date', sa.Integer(), nullable=True),
-    sa.Column('delivery_id', sa.Integer(), nullable=True),
-    sa.Column('delivery_address', sa.String(), nullable=False),
+    sa.Column('delivery_person', sa.Integer(), nullable=True),
+    sa.Column('delivery_address', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], name=op.f('fk_order_user_id_user')),
+    sa.ForeignKeyConstraint(['buyer_id'], ['user.id'], name=op.f('fk_order_buyer_id_user')),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('shop',
