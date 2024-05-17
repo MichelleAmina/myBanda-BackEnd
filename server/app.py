@@ -254,4 +254,4 @@ api.add_resource(Reviews, '/review')
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
-# from config import app, db, api, request, session, Resource
+

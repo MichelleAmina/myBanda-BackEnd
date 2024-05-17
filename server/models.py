@@ -24,9 +24,10 @@ class User(db.Model, SerializerMixin):
     reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
     reviews_received = db.relationship('Review', backref='seller', foreign_keys='Review.seller_id', lazy=True)
 
+    order = db.relationship('Order', back_populates='user')
     assigned_orders = db.relationship('Order', back_populates='delivery')
     
-    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash', '-assigned_orders.delivery')
+    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash', '-assigned_orders.delivery', '-order.user')
 
 
     @hybrid_property
@@ -119,8 +120,9 @@ class Order(db.Model, SerializerMixin):
     delivery = db.relationship('User', back_populates='assigned_orders', cascade="all, delete-orphan")
 
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
+    user = delivery = db.relationship('User', back_populates='order', cascade="all, delete-orphan")
 
-    serialize_rules = ('-delivery.assigned_orders', '-order_items.order')
+    serialize_rules = ('-delivery.assigned_orders', '-order_items.order', '-user.order')
 
     def __repr__(self):
         return f'<Order {self.id}>'
@@ -131,7 +133,7 @@ class OrderItem(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
     
-    serialize_rules = ('-order', '-product')
+    serialize_rules = ('-order.order_items', '-product.orders')
 
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
@@ -145,6 +147,7 @@ class Review(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer)
+    date = db.Column(db.String)
 
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
