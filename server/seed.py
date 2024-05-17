@@ -150,9 +150,9 @@ with app.app_context():
     db.session.commit()
 
     print("Seeding order...")
-    order_1 = Order(total_price=1000, status='pending', delivery_fee=100, delivery=vic, user=mike)
-    order_2 = Order(total_price=2000, status='pending', delivery_fee=350, delivery=vic, user=mike)
-    order_3 = Order(total_price=3000, status='pending', delivery_fee=700, delivery=vic, user=mike)
+    order_1 = Order(total_price=1000, status='pending', delivery_fee=100, user=mike)
+    order_2 = Order(total_price=2000, status='pending', delivery_fee=350, user=mike)
+    order_3 = Order(total_price=3000, status='pending', delivery_fee=700, user=mike)
     orderz = [order_1, order_2, order_3]
     db.session.add_all(orderz)
     db.session.commit()

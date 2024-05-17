@@ -24,10 +24,9 @@ class User(db.Model, SerializerMixin):
     reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
     reviews_received = db.relationship('Review', backref='seller', foreign_keys='Review.seller_id', lazy=True)
 
-    order = db.relationship('Order', back_populates='user')
-    assigned_orders = db.relationship('Order', back_populates='delivery')
+    order = db.relationship("Order", back_populates='user')
     
-    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash', '-assigned_orders.delivery', '-order.user')
+    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash','-order.user')
 
 
     @hybrid_property
@@ -111,18 +110,18 @@ class Order(db.Model, SerializerMixin):
     status = db.Column(db.String, nullable=False)  # e.g., 'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
     date = db.Column(db.Integer)
+    delivery_id = db.Column(db.Integer)
     
     # Additional field for delivery information, such as address
     delivery_address = db.Column(db.String, nullable=False)
     
     # Other additional fields??
-    delivery_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    delivery = db.relationship('User', back_populates='assigned_orders', cascade="all, delete-orphan")
+    
 
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
     user = delivery = db.relationship('User', back_populates='order', cascade="all, delete-orphan")
 
-    serialize_rules = ('-delivery.assigned_orders', '-order_items.order', '-user.order')
+    serialize_rules = ('-order_items.order', '-user.order')
 
     #function to get current date and time
     def get_current_time():
