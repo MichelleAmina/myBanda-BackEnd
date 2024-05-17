@@ -1,4 +1,4 @@
-from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt
+from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta
 
 
 # User class with details obtained on registration 
@@ -114,7 +114,7 @@ class Order(db.Model, SerializerMixin):
     
     # Additional field for delivery information, such as address
     delivery_address = db.Column(db.String, nullable=False)
-
+    
     # Other additional fields??
     delivery_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     delivery = db.relationship('User', back_populates='assigned_orders', cascade="all, delete-orphan")
@@ -124,6 +124,14 @@ class Order(db.Model, SerializerMixin):
 
     serialize_rules = ('-delivery.assigned_orders', '-order_items.order', '-user.order')
 
+    #function to get current date and time
+    def get_current_time():
+        return datetime.now(timezone.utc)
+    
+    # Timestamp for order creation
+    created_at = db.Column(db.DateTime, default=get_current_time, nullable=False)
+
+    
     def __repr__(self):
         return f'<Order {self.id}>'
 
