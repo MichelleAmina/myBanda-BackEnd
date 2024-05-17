@@ -109,8 +109,7 @@ class Order(db.Model, SerializerMixin):
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String, nullable=False)  # e.g., 'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
-    date = db.Column(db.Integer)
-    delivery_id = db.Column(db.Integer)
+    delivery_person = db.Column(db.Integer)
     
     # Additional field for delivery information, such as address
     delivery_address = db.Column(db.String, nullable=False)
@@ -119,7 +118,7 @@ class Order(db.Model, SerializerMixin):
     
 
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
-    user = delivery = db.relationship('User', back_populates='order', cascade="all, delete-orphan")
+    user = delivery = db.relationship('User', back_populates='order')
 
     serialize_rules = ('-order_items.order', '-user.order')
 
