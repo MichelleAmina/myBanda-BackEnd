@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta
 import json
 
 
@@ -145,8 +145,11 @@ class Orders(Resource):
         status = data.get('status')
         delivery_fee = data.get('delivery_fee')
         delivery_address = data.get('delivery_address')
+        
+        # Getting the current time
+        created_at = datetime.now(timezone.utc)
 
-        order = Order(user_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address)
+        order = Order(user_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address, created_at=created_at)
         db.session.add(order)
         db.session.commit()
 
