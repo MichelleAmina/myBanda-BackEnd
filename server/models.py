@@ -23,8 +23,10 @@ class User(db.Model, SerializerMixin):
     # Relationships for reviews
     reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
     reviews_received = db.relationship('Review', backref='seller', foreign_keys='Review.seller_id', lazy=True)
+
+    assigned_orders = db.relationship('Order', back_populates='delivery')
     
-    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash')
+    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash', '-assigned_orders.delivery')
 
 
     @hybrid_property
@@ -105,15 +107,20 @@ class Order(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String, nullable=False)  # e.g., 'pending', 'shipped', 'delivered'
+    status = db.Column(db.String, nullable=False)  # e.g., 'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
+    date = db.Column(db.Integer)
     
     # Additional field for delivery information, such as address
     delivery_address = db.Column(db.String, nullable=False)
 
     # Other additional fields??
+    delivery_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    delivery = db.relationship('User', back_populates='assigned_orders', cascade="all, delete-orphan")
 
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
+
+    serialize_rules = ('-delivery.assigned_orders', '-order_items.order')
 
     def __repr__(self):
         return f'<Order {self.id}>'
