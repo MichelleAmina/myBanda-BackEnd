@@ -57,31 +57,78 @@ with app.app_context():
     db.session.commit()
 
     print("Seeding images...")
-    lamp_image1 = ProductsImages(image_url="./images/lamp.jpg", product=lamp)
-    painting_image1 = ProductsImages(image_url="./images/painting.jpg", product=painting)
-    tv_image1 = ProductsImages(image_url="./images/tv.jpg", product=tv)
-    microwave_image1 = ProductsImages(image_url="./images/microwave.jpg", product=microwave)
-    lawnmower_image1 = ProductsImages(image_url="./images/lawnmowers.jpg", product=lawnmower)
-    hammer_image1 = ProductsImages(image_url="./images/hammer.jpg", product=hammer)
-    dress_image1 = ProductsImages(image_url="./images/dress.jpg", product=dress)
-    shoe_image = ProductsImages(image_url="https://media.istockphoto.com/id/1417090656/photo/white-leather-sneaker.jpg?s=1024x1024&w=is&k=20&c=y5ER4LvqG_PNwF9s8DgPJdMwULhualEKRSpJCL1QXHA=", product=shoe)
-    watch_image1 = ProductsImages(image_url="./images/watch.jpg", product=watch)
-    ring_image1 = ProductsImages(image_url="./images/ring.jpg", product=ring)
-    lipstick_image1 = ProductsImages(image_url="./images/lipstick.jpg", product=lipstick)
-    mascara_image1 = ProductsImages(image_url="./images/mascara.jpg", product=mascara)
-    boots_image1 = ProductsImages(image_url="./images/boots.jpg", product=boots)
-    rope_image1 = ProductsImages(image_url="./images/rope.jpg", product=rope)
-    phone_image1 = ProductsImages(image_url="./images/iphone.jpg", product=phone)
-    laptop_image1 = ProductsImages(image_url="./images/laptop.jpg", product=laptop)
-    medicine_image1 = ProductsImages(image_url="./images/medicine.jpg", product=medicine)
-    bandage_image1 = ProductsImages(image_url="./images/bandage.jpg", product=bandage)
-    playstation_image1 = ProductsImages(image_url="./images/ps.jpg", product=playstation)
-    monopoly_image1 = ProductsImages(image_url="./images/monopoly.jpg", product=monopoly)
-    book_image1 = ProductsImages(image_url="./images/coding.jpg", product=book)
-    potter_image1 = ProductsImages(image_url="./images/harrypotter.jpg", product=potter)
-    burgers_image1 = ProductsImages(image_url="./images/burger.jpg", product=burgers)
-    smoothie_image1 = ProductsImages(image_url="./images/smothie.jpg", product=smoothie)
-    images = [lamp_image1, painting_image1, tv_image1, microwave_image1, lawnmower_image1, hammer_image1, dress_image1, shoe_image, watch_image1, ring_image1, lipstick_image1, mascara_image1, boots_image1, rope_image1, phone_image1, laptop_image1, medicine_image1, bandage_image1, playstation_image1, monopoly_image1, bandage_image1, playstation_image1, monopoly_image1, book_image1, potter_image1, burgers_image1, smoothie_image1]
+    lamp_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/23/9c/9a/239c9ae19bfe38378ccf36f2d3bff901.jpg", product=lamp)
+    lamp_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/ef/3a/fd/ef3afd60fd6d329efa2114e8f7324177.jpg", product=lamp)
+    painting_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/88/6c/2d/886c2dd9632df00ec675fdcf6d2fac92.jpg", product=painting)
+    painting_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/03/a5/41/03a541999a8a071c3988c5ec66f5ffaf.jpg", product=painting)
+    tv_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/19/de/fa/19defa028495d1c736e1664d3320c3d9.jpg", product=tv)
+    tv_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/e1/de/02/e1de02f7da8004c15abef83490fa35e8.jpg", product=tv)
+    microwave_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/7c/64/9a/7c649a0d09c4179a68c6f0a32b9284d3.jpg", product=microwave)
+    microwave_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/b4/4b/27/b44b2773a08de3710cbd44a072b9029d.jpg", product=microwave)
+    lawnmower_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/90/a8/d6/90a8d6f3555288eadae33f9de8c7fd25.jpg", product=lawnmower)
+    lawnmower_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/30/42/30/3042304e5bcc7c33d3885f7c834eec64.jpg", product=lawnmower)
+    hammer_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/79/39/ce/7939cec1d117cfa290636e0843d4085b.jpg", product=hammer)
+    hammer_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/7d/d4/16/7dd4161cc3f81ad6621a8405e6889a1f.jpg", product=hammer)
+    dress_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/43/30/43/43304353703693f1684dc6d2d3ac6d3b.jpg", product=dress)
+    dress_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/a4/1a/71/a41a71cc235276c8fb09309c8c0ef57b.jpg", product=dress)
+    shoe_image1 = ProductsImages(image_url="https://media.istockphoto.com/id/1417090656/photo/white-leather-sneaker.jpg?s=1024x1024&w=is&k=20&c=y5ER4LvqG_PNwF9s8DgPJdMwULhualEKRSpJCL1QXHA=", product=shoe)
+    shoe_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/38/35/d7/3835d78455d62cfc7a3740963c3adaa6.jpg", product=shoe)
+    watch_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/1a/d2/91/1ad291099701d4db295f7f2245b63eff.jpg", product=watch)
+    watch_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/f8/0b/88/f80b88f9f381b420abf285c9731db135.jpg", product=watch)
+    ring_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/52/2f/57/522f57c7668bb16f4364df4577f63867.jpg", product=ring)
+    ring_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/79/27/92/792792386ecaa4c7be8c7c600bd0876c.jpg", product=ring)
+    lipstick_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/54/3e/2a/543e2ab0d0df02f24ec311a8227647e3.jpg", product=lipstick)
+    lipstick_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/a3/af/e1/a3afe1c2cb803c4911cb71d64d268b0d.jpg", product=lipstick)
+    mascara_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/c6/81/56/c68156b7c29809beb6ad95c6d49176e4.jpg", product=mascara)
+    mascara_image2 = ProductsImages(image_url="https://i.pinimg.com/474x/64/42/1d/64421decb6d49e74eab3883db9aab02d.jpg", product=mascara)
+    boots_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/9c/d7/9d/9cd79d2c25582487798003720371b319.jpg", product=boots)
+    boots_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/6c/13/69/6c1369cd17a054db642d8166d16959cc.jpg", product=boots)
+    rope_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/67/d8/d6/67d8d65166f61ccfe0373aaffd40c44d.jpg", product=rope)
+    rope_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/1a/87/b3/1a87b3ecb185d04b8b19e158e384c70c.jpg", product=rope)
+    phone_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/d5/95/e4/d595e4530aaa0fcdf4ff8e7bc17f4d86.jpg", product=phone)
+    phone_image2 = ProductsImages(image_url="https://i.pinimg.com/474x/95/ec/76/95ec76c86e850e4d92dde39053154718.jpg", product=phone)
+    laptop_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/78/bf/a8/78bfa893270a0b531705b1c56f25674d.jpg", product=laptop)
+    laptop_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/46/82/07/46820717c03eb4f359f46ea9caa1e1df.jpg", product=laptop)
+    medicine_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/43/bb/22/43bb22a50aec7c9e67856ed4699ef33b.jpg", product=medicine)
+    medicine_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/c0/a4/eb/c0a4ebf10e4972e9ae5fc434ffde5903.jpg", product=medicine)
+    bandage_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/8e/34/c0/8e34c0cfcd6379ca80c9df19b84cffc0.jpg", product=bandage)
+    bandage_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/8e/c0/09/8ec0099d50b7d6cd36c20fafd5d2128a.jpg", product=bandage)
+    playstation_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/76/47/bd/7647bd8094eafac2b391351f6799098e.jpg", product=playstation)
+    playstation_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/c1/75/ca/c175ca7fe7834248973f025a00945606.jpg", product=playstation)
+    monopoly_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/40/a9/b0/40a9b0851b2bbf6d6000f6f0cd189065.jpg", product=monopoly)
+    monopoly_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/6e/42/5c/6e425c90bed8d9ead384bc236abed6af.jpg", product=monopoly)
+    book_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/b4/e3/51/b4e3510960b0d967e157e9494b08575d.jpg", product=book)
+    book_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/69/9a/a6/699aa65083fe769632afa2efb9f0a47e.jpg", product=book)
+    potter_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/03/73/1a/03731ae5faf3a20a3ec48390b32a7eeb.jpg", product=potter)
+    potter_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/78/4e/63/784e63771eeca049c18436037b71cb42.jpg", product=potter)
+    burgers_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/3c/1d/12/3c1d12d43ea6aeca59fd2321c4f15b8d.jpg", product=burgers)
+    burgers_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/e2/5a/2e/e25a2e633611adc93e0340fd98241711.jpg", product=burgers)
+    smoothie_image1 = ProductsImages(image_url="https://i.pinimg.com/236x/a1/53/36/a1533638301b09d54c4a6a48078e0c03.jpg", product=smoothie)
+    smoothie_image2 = ProductsImages(image_url="https://i.pinimg.com/236x/7c/4c/40/7c4c40263b2ce90ca0f338be6bb6ae09.jpg", product=smoothie)
+    images = [lamp_image1,lamp_image2, 
+              painting_image1,painting_image2, 
+              tv_image1, tv_image2, 
+              microwave_image1, microwave_image2, 
+              lawnmower_image1, lawnmower_image2, 
+              hammer_image1, hammer_image2, 
+              dress_image1, dress_image2, 
+              shoe_image1, shoe_image2, 
+              watch_image1, watch_image2, 
+              ring_image1, ring_image2, 
+              lipstick_image1, lipstick_image2, 
+              mascara_image1, mascara_image2, 
+              boots_image1, boots_image2, 
+              rope_image1, rope_image2, 
+              phone_image1, phone_image2, 
+              laptop_image1, laptop_image2, 
+              medicine_image1, medicine_image2, 
+              bandage_image1, bandage_image2, 
+              playstation_image1, playstation_image2, 
+              monopoly_image1, monopoly_image2,   
+              book_image1, book_image2, 
+              potter_image1, potter_image2, 
+              burgers_image1, burgers_image2, 
+              smoothie_image1, smoothie_image2]
     db.session.add_all(images)
     db.session.commit()
 
