@@ -103,7 +103,7 @@ class OrderItem(db.Model, SerializerMixin):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     product = db.relationship("Product", back_populates='items')
 
-    serialize_rules = ('-order.order_items', '-product.items')
+    serialize_rules = ('-order.order_items','-product.items')
 
     def __repr__(self):
         return f'<OrderItem {self.id}>'
@@ -124,7 +124,7 @@ class Order(db.Model, SerializerMixin):
 
     order_items = db.relationship('OrderItem', back_populates='order', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-order_items.order', '-buyer.my_orders', '-delivery_person.my_deliveries')
+    serialize_rules = ('-order_items.order', '-order_items.product.reviews','-buyer.my_orders','-buyer.reviews_given', '-delivery_person.my_deliveries')
 
     def get_current_time():
         return datetime.now(timezone.utc)

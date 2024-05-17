@@ -133,12 +133,12 @@ class Shops(Resource):
         )
 
 class Orders(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self):
-        user_id = session.get('user_id')
+        # user_id = session.get('user_id')
         
-        if not user_id:
-            return {'message': 'User not logged in'}, 401
+        # if not user_id:
+        #     return {'message': 'User not logged in'}, 401
         
         orders = [order.to_dict() for order in Order.query.all()]
         if not orders:
