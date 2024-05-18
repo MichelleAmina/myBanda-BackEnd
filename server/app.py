@@ -55,6 +55,18 @@ class ProductIndex(Resource):
             200
         )
 
+# @app.route('/games/<int:id>')
+# def game_by_id(id):
+#     game = Game.query.filter(Game.id == id).first()
+
+#     game_dict = game.to_dict()
+
+#     response = make_response(
+#         game_dict,
+#         200
+#     )
+
+#     return response
 
 class Products(Resource):
     def get(self):
@@ -114,13 +126,11 @@ class Shops(Resource):
     
         shops = [shops.to_dict() for shops in Shop.query.all()]
 
-        shop = Shop.query.filter(Shop.id == 1).first()
-
         if not shops:
             return {"message":"No shops!"}, 404
 
         return make_response(
-            shop.to_dict(),
+            shops,
             200
         )
 
