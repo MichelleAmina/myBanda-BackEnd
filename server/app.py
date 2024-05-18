@@ -50,191 +50,244 @@ class Login(Resource):
 
 class Products(Resource):
     def get(self):
-        
-        products = [product.to_dict() for product in Product.query.all()]
+        try:
+            products = [product.to_dict() for product in Product.query.all()]
 
-        if not products:
-            return {"message":"Add products!"}, 404
+            if not products:
+                return {"message": "Add products!"}, 404
 
-        return make_response(
-            products,
-            200
-        )
+            return make_response(
+                products,
+                200
+            )
+        except Exception as e:
+            return {"message": str(e)}, 500
     
     def post(self):
-        data = request.get_json()
-        name = data.get('name')
-        description = data.get('description')
-        price = data.get('price')
-        # image_url = data.get('image_url')
-        quantity_available = data.get('quantity_available')
-        category = data.get('category')
-        # seller_id = data.get('seller_id')
-        shop_id = data.get('shop_id')
+        try:
+            data = request.get_json()
+            name = data.get('name')
+            description = data.get('description')
+            price = data.get('price')
+            quantity_available = data.get('quantity_available')
+            category = data.get('category')
+            shop_id = data.get('shop_id')
 
-        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
-        db.session.add(product)
-        db.session.commit()
+            if not all([name, description, price, quantity_available, category, shop_id]):
+                return {"message": "All fields are required!"}, 400
 
-        response = "Added succesfully"
-        # product.image_url = json.loads(product.image_url)
+            product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id)
+            db.session.add(product)
+            db.session.commit()
 
-        return make_response(
-            product.to_dict(),
-            200
-        )
+            return make_response(
+                product.to_dict(),
+                201
+            )
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
+
+
     
 class Images(Resource):
     def post(self):
-        data = request.get_json()
+        try:
+            data = request.get_json()
+            
+            image_url = data.get('image_url')
+            product_id = data.get('product_id')
 
-        image_url = data.get('image_url')
-        product_id = data.get('product_id')
+            if not image_url or not product_id:
+                return {"message": "image_url and product_id are required fields!"}, 400
 
-        image = ProductsImages(image_url=image_url, product_id=product_id)
-        db.session.add(image)
-        db.session.commit()
+            image = ProductsImages(image_url=image_url, product_id=product_id)
+            db.session.add(image)
+            db.session.commit()
 
-        return make_response(
-            image.to_dict(),
-            200
-        )
+            return make_response(
+                image.to_dict(),
+                201
+            )
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
+
     
 class Shops(Resource):
     def post(self):
-        data = request.get_json()
+        try:
+            data = request.get_json()
+            
+            name = data.get('name')
+            description = data.get('description')
+            logo_image_url = data.get('logo_image_url')
+            banner_image_url = data.get('banner_image_url')
+            seller_id = data.get('seller_id')
 
-        name = data.get('name')
-        description = data.get('description')
-        logo_image_url = data.get('logo_image_url')
-        banner_image_url = data.get('banner_image_url')
-        seller_id = data.get('seller_id')
+            if not name or not seller_id:
+                return {"message": "name and seller_id are required fields!"}, 400
 
-        shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id)
-        db.session.add(shop)
-        db.session.commit()
+            shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id)
+            db.session.add(shop)
+            db.session.commit()
 
-        return make_response(
-            shop.to_dict(),
-            200
-        )
+            return make_response(
+                shop.to_dict(),
+                201
+            )
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
 
 
 class Orders(Resource):
     @jwt_required()
     def get(self):
-        user_id = session.get('user_id')
-        
-        if not user_id:
-            return {'message': 'User not logged in'}, 401
-        
-        orders = [order.to_dict() for order in Order.query.all()]
-        if not orders:
-            return {"message": "Orders are not added"}, 404
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
-        return make_response(
-            orders, 
-            200
-            )
-    
+            orders = [order.to_dict() for order in Order.query.all()]
+            if not orders:
+                return {"message": "Orders are not added"}, 404
+
+            return make_response(orders, 200)
+        except Exception as e:
+            return {"message": str(e)}, 500
+
     @jwt_required()
     def post(self):
-        user_id = session.get('user_id')
-        if not user_id:
-            return {'message': 'User not logged in'}, 401
-        
-        
-        data = request.get_json()
-        total_price = data.get('total_price')
-        status = data.get('status')
-        delivery_fee = data.get('delivery_fee')
-        delivery_address = data.get('delivery_address')
-        
-        # Getting the current time
-        created_at = datetime.now(timezone.utc)
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
-        order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address, created_at=created_at)
-        db.session.add(order)
-        db.session.commit()
+            data = request.get_json()
+            if not data:
+                return {'message': 'No data provided'}, 400
 
-        return make_response(
-            order.to_dict(), 
-            201
-            )
+            total_price = data.get('total_price')
+            status = data.get('status')
+            delivery_fee = data.get('delivery_fee')
+            delivery_address = data.get('delivery_address')
+
+            if None in [total_price, status, delivery_fee, delivery_address]:
+                return {'message': 'Required field(s) missing'}, 400
+
+            # Getting the current time
+            created_at = datetime.now(timezone.utc)
+
+            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at)
+            db.session.add(order)
+            db.session.commit()
+
+            return make_response(order.to_dict(), 201)
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
 
 
 
 class OrderItems(Resource):
     @jwt_required()
     def get(self):
-        order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
-        
-        if not order_items:
-            return {"message": "Order Items are not added"}, 404
+        try:
+            order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
+            if not order_items:
+                return {"message": "Order Items are not added"}, 404
 
-        return make_response(
-            order_items, 
-            200
-            )
-    
+            return make_response(order_items, 200)
+        except Exception as e:
+            return {"message": str(e)}, 500
+
     @jwt_required()
     def post(self):
-        user_id = session.get('user_id')
-        if not user_id:
-            return {'message': 'User not logged in'}, 401
-        
-        data = request.get_json()
-        order_id = data.get('order_id')
-        product_id = data.get('product_id')
-        quantity = data.get('quantity')
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
+            
+            data = request.get_json()
+            if not data:
+                return {'message': 'No data provided'}, 400
 
-        order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity)
-        db.session.add(order_item)
-        db.session.commit()
+            order_id = data.get('order_id')
+            product_id = data.get('product_id')
+            quantity = data.get('quantity')
 
-        return make_response(
-            order_item.to_dict(), 
-            201
-            )
+            if None in [order_id, product_id, quantity]:
+                return {'message': 'Required field(s) missing'}, 400
+
+            # Checking if the order exists
+            order = Order.query.get(order_id)
+            if not order:
+                return {'message': 'Order does not exist'}, 404
+
+            # Checking if the product exists
+            product = Product.query.get(product_id)
+            if not product:
+                return {'message': 'Product does not exist'}, 404
+
+            order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity)
+            db.session.add(order_item)
+            db.session.commit()
+
+            return make_response(order_item.to_dict(), 201)
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
 
 
 
 class Reviews(Resource):
     @jwt_required()
     def get(self):
-        reviews = [review.to_dict() for review in Review.query.all()]
-        
-        if not reviews:
-            return {"message": "Reviews not yet added"}, 404
+        try:
+            reviews = [review.to_dict() for review in Review.query.all()]
+            if not reviews:
+                return {"message": "Reviews not yet added"}, 404
 
-        return make_response(
-            reviews, 
-            200
-            )
-    
+            return make_response(reviews, 200)
+        except Exception as e:
+            return {"message": str(e)}, 500
+
     @jwt_required()
     def post(self):
-        user_id = session.get('user_id')
-        if not user_id:
-            return {'message': 'User not logged in'}, 401
-        
-        
-        
-        data = request.get_json()
-        content = data.get('content')
-        rating = data.get('rating')
-        buyer_id = data.get('buyer_id')
-        seller_id = data.get('seller_id')
-        product_id = data.get('product_id')
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
-        review = Review(content=content, buyer_id=buyer_id, seller_id=seller_id, product_id=product_id, rating=rating)
-        db.session.add(review)
-        db.session.commit()
+            data = request.get_json()
+            if not data:
+                return {'message': 'No data provided'}, 400
 
-        return make_response(
-            review.to_dict(), 
-            201
-            )
+            content = data.get('content')
+            rating = data.get('rating')
+            buyer_id = user_id  # the logged-in user is the buyer
+            seller_id = data.get('seller_id')
+            product_id = data.get('product_id')
+
+            if None in [content, rating, seller_id, product_id]:
+                return {'message': 'Required field(s) missing'}, 400
+
+            # Checking if the seller and product exist before adding them
+            seller = User.query.get(seller_id)
+            product = Product.query.get(product_id)
+            if not seller or not product:
+                return {'message': 'Seller or product does not exist'}, 404
+
+            review = Review(content=content, buyer_id=buyer_id, seller_id=seller_id, product_id=product_id, rating=rating)
+            db.session.add(review)
+            db.session.commit()
+
+            return make_response(review.to_dict(), 201)
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
+
 
         
 
