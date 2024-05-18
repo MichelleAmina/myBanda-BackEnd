@@ -17,7 +17,7 @@ class SignUp(Resource):
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 return {'message': 'User with this email already exists'}, 400
-                        
+
             user = User(username=username, email=email, location=location, contact=contact, role=role)
             user.password_hash = password
             db.session.add(user)
@@ -44,13 +44,22 @@ class Login(Resource):
             return {'message': 'Login successful', 'access_token': access_token}, 200
         except Exception as e:
             return {'message': str(e)}, 500
+        
+class ProductIndex(Resource):
+    def get(self, id):
+
+        product = Product.query.filter(Product.id == id).first()
+
+        return make_response(
+            product.to_dict(),
+            200
+        )
+
 
 class Products(Resource):
     def get(self):
         
         products = [product.to_dict() for product in Product.query.all()]
-
-        product = Product.query.filter(Product.id == 1).first()
 
         if not products:
             return {"message":"Add products!"}, 404
@@ -260,6 +269,7 @@ class Hello(Resource):
             200
         )
 
+api.add_resource(ProductIndex, '/product/<int:id>')
 api.add_resource(Products, '/products')
 api.add_resource(SignUp, '/signup' )
 api.add_resource(Login, '/login')
