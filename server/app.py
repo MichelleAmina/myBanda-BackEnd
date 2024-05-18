@@ -138,25 +138,26 @@ class Orders(Resource):
         if not user_id:
             return {'message': 'User not logged in'}, 401
         
-        
         data = request.get_json()
-        user_id = data.get('user_id')
         total_price = data.get('total_price')
         status = data.get('status')
         delivery_fee = data.get('delivery_fee')
         delivery_address = data.get('delivery_address')
-        
+        delivery_id = data.get('delivery_id')  
+
         # Getting the current time
         created_at = datetime.now(timezone.utc)
 
-        order = Order(user_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address, created_at=created_at)
+        order = Order(buyers_id=user_id,  total_price=total_price, status=status, delivery_fee=delivery_fee, 
+            delivery_address=delivery_address, delivery_id=delivery_id,  created_at=created_at
+        )
         db.session.add(order)
         db.session.commit()
 
         return make_response(
             order.to_dict(), 
             201
-            )
+        )
 
 
 class OrderItems(Resource):
