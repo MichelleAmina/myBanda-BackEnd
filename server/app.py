@@ -7,41 +7,45 @@ import json
 
 class SignUp(Resource):
     def post(self):
-        data = request.get_json()
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
-        location = data.get('location')
-        contact = data.get('contact')
-        role = data.get('role')
+        try:
+            data = request.get_json()
+            username = data.get('username')
+            email = data.get('email')
+            password = data.get('password')
+            location = data.get('location')
+            contact = data.get('contact')
+            role = data.get('role')
 
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return {'message': 'User with this email already exists'}, 400
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                return {'message': 'User with this email already exists'}, 400
 
-        user = User(username=username, email=email, location=location, contact=contact ,role=role)
-        user.password_hash = password
-        db.session.add(user)
-        db.session.commit()
+            user = User(username=username, email=email, location=location, contact=contact, role=role)
+            user.password_hash = password
+            db.session.add(user)
+            db.session.commit()
 
-        return {'message': 'User created successfully'}, 201
+            return {'message': 'User created successfully'}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
 
 class Login(Resource):
     def post(self):
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            password = data.get('password')
 
-        user = User.query.filter_by(email=email).first()
-        if not user or not user.authenticate(password):
-            return {'message': 'Invalid email or password'}, 401
-        
-        # storing the session in the user Id
-        session['user_id'] = user.id
-
-
-        access_token = create_access_token(identity=user.id)
-        return {'message': 'Login successful', 'access_token': access_token}, 200
+            user = User.query.filter_by(email=email).first()
+            if not user or not user.authenticate(password):
+                return {'message': 'Invalid email or password'}, 401
+            
+            session['user_id'] = user.id
+            access_token = create_access_token(identity=user.id)
+            return {'message': 'Login successful', 'access_token': access_token}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 class Products(Resource):
