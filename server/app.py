@@ -49,13 +49,11 @@ class Products(Resource):
         
         products = [product.to_dict() for product in Product.query.all()]
 
-        product = Product.query.filter(Product.id == 1).first()
-
         if not products:
             return {"message":"Add products!"}, 404
 
         return make_response(
-            product.to_dict(),
+            products,
             200
         )
     
@@ -99,21 +97,6 @@ class Images(Resource):
         )
     
 class Shops(Resource):
-
-    def get(self):
-    
-        shops = [shops.to_dict() for shops in Shop.query.all()]
-
-        shop = Shop.query.filter(Shop.id == 1).first()
-
-        if not shops:
-            return {"message":"No shops!"}, 404
-
-        return make_response(
-            shop.to_dict(),
-            200
-        )
-
     def post(self):
         data = request.get_json()
 
@@ -131,8 +114,7 @@ class Shops(Resource):
             shop.to_dict(),
             200
         )
-        
-        
+
 class Orders(Resource):
     @jwt_required()
     def get(self):
@@ -148,44 +130,33 @@ class Orders(Resource):
         return make_response(
             orders, 
             200
-        )
+            )
     
+    @jwt_required()
     def post(self):
-        try:
-            user_id = session.get('user_id')
-            if not user_id:
-                return {'message': 'User not logged in'}, 401
-                
-            data = request.get_json()
-            total_price = data.get('total_price')
-            status = data.get('status')
-            delivery_fee = data.get('delivery_fee')
-            delivery_address = data.get('delivery_address')
-            
-            if not (total_price and status and delivery_address):
-                return {'message': 'Missing required fields'}, 400
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'message': 'User not logged in'}, 401
+        
+        
+        data = request.get_json()
+        user_id = data.get('user_id')
+        total_price = data.get('total_price')
+        status = data.get('status')
+        delivery_fee = data.get('delivery_fee')
+        delivery_address = data.get('delivery_address')
+        
+        # Getting the current time
+        created_at = datetime.now(timezone.utc)
 
-            # Getting the current time
-            created_at = datetime.now(timezone.utc)
+        order = Order(user_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address, created_at=created_at)
+        db.session.add(order)
+        db.session.commit()
 
-            order = Order(
-                buyers_id=user_id,
-                total_price=total_price,
-                status=status,
-                delivery_fee=delivery_fee,
-                delivery_address=delivery_address,
-                created_at=created_at
+        return make_response(
+            order.to_dict(), 
+            201
             )
-            db.session.add(order)
-            db.session.commit()
-
-            return make_response(
-                order.to_dict(), 
-                201
-            )
-        except Exception as e:
-            return {'message': str(e)}, 500
-
 
 
 class OrderItems(Resource):
@@ -227,40 +198,40 @@ class Reviews(Resource):
     @jwt_required()
     def get(self):
         reviews = [review.to_dict() for review in Review.query.all()]
+        
         if not reviews:
             return {"message": "Reviews not yet added"}, 404
 
-        return make_response(jsonify(reviews), 200)
+        return make_response(
+            reviews, 
+            200
+            )
     
     @jwt_required()
     def post(self):
-        try:
-            data = request.get_json()
-            content = data.get('content')
-            rating = data.get('rating')
-            buyer_id = data.get('buyer_id')
-            seller_id = data.get('seller_id')
-            product_id = data.get('product_id')
-
-            if not (content and rating and buyer_id and seller_id and product_id):
-                return {'message': 'Missing required fields'}, 400
-
-            review = Review(
-                content=content, 
-                rating=rating, 
-                buyer_id=buyer_id, 
-                seller_id=seller_id, 
-                product_id=product_id
-            )
-            db.session.add(review)
-            db.session.commit()
-
-            return make_response(review.to_dict(), 201)
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'message': 'User not logged in'}, 401
         
-        except Exception as e:
-            db.session.rollback()
-            return {'message': str(e)}, 500
+        
+        
+        data = request.get_json()
+        content = data.get('content')
+        rating = data.get('rating')
+        buyer_id = data.get('buyer_id')
+        seller_id = data.get('seller_id')
+        product_id = data.get('product_id')
 
+        review = Review(content=content, buyer_id=buyer_id, seller_id=seller_id, product_id=product_id, rating=rating)
+        db.session.add(review)
+        db.session.commit()
+
+        return make_response(
+            review.to_dict(), 
+            201
+            )
+
+        
 
 
 class Hello(Resource):
@@ -285,3 +256,5 @@ api.add_resource(Reviews, '/review')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
+
