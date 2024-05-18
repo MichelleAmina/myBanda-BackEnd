@@ -119,6 +119,7 @@ class Shops(Resource):
             200
         )
 
+
 class Orders(Resource):
     @jwt_required()
     def get(self):
@@ -144,7 +145,6 @@ class Orders(Resource):
         
         
         data = request.get_json()
-        user_id = data.get('user_id')
         total_price = data.get('total_price')
         status = data.get('status')
         delivery_fee = data.get('delivery_fee')
@@ -153,7 +153,7 @@ class Orders(Resource):
         # Getting the current time
         created_at = datetime.now(timezone.utc)
 
-        order = Order(user_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address, created_at=created_at)
+        order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee ,delivery_address=delivery_address, created_at=created_at)
         db.session.add(order)
         db.session.commit()
 
@@ -161,6 +161,7 @@ class Orders(Resource):
             order.to_dict(), 
             201
             )
+
 
 
 class OrderItems(Resource):
