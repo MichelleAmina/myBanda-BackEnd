@@ -11,7 +11,7 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime, timezone, timedelta
 import os
 from flask_session import Session
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required,  get_jwt_identity
 # from jwt.exceptions import DecodeErrors
 
 from dotenv import load_dotenv

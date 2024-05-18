@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta,  get_jwt_identity
 import json
 
 
@@ -230,38 +230,40 @@ class Reviews(Resource):
     @jwt_required()
     def get(self):
         reviews = [review.to_dict() for review in Review.query.all()]
-        
         if not reviews:
             return {"message": "Reviews not yet added"}, 404
 
-        return make_response(
-            reviews, 
-            200
-            )
+        return make_response(jsonify(reviews), 200)
     
     @jwt_required()
     def post(self):
-        user_id = session.get('user_id')
-        if not user_id:
-            return {'message': 'User not logged in'}, 401
-        
-        
-        
-        data = request.get_json()
-        content = data.get('content')
-        rating = data.get('rating')
-        buyer_id = data.get('buyer_id')
-        seller_id = data.get('seller_id')
-        product_id = data.get('product_id')
+        try:
+            data = request.get_json()
+            content = data.get('content')
+            rating = data.get('rating')
+            buyer_id = data.get('buyer_id')
+            seller_id = data.get('seller_id')
+            product_id = data.get('product_id')
 
-        review = Review(content=content, buyer_id=buyer_id, seller_id=seller_id, product_id=product_id, rating=rating)
-        db.session.add(review)
-        db.session.commit()
+            if not (content and rating and buyer_id and seller_id and product_id):
+                return {'message': 'Missing required fields'}, 400
 
-        return make_response(
-            review.to_dict(), 
-            201
+            review = Review(
+                content=content, 
+                rating=rating, 
+                buyer_id=buyer_id, 
+                seller_id=seller_id, 
+                product_id=product_id
             )
+            db.session.add(review)
+            db.session.commit()
+
+            return make_response(review.to_dict(), 201)
+        
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
+
 
 
 class Hello(Resource):
