@@ -45,6 +45,20 @@ class Login(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
         
+
+class Users(Resource):
+    def get(self):
+        
+        users = [user.to_dict() for user in User.query.all()]
+
+        if not users:
+            return {"message":"No users to display!"}, 404
+
+        return make_response(
+            users,
+            200
+        )
+        
 class ProductIndex(Resource):
     def get(self, id):
 
@@ -54,19 +68,6 @@ class ProductIndex(Resource):
             product.to_dict(),
             200
         )
-
-# @app.route('/games/<int:id>')
-# def game_by_id(id):
-#     game = Game.query.filter(Game.id == id).first()
-
-#     game_dict = game.to_dict()
-
-#     response = make_response(
-#         game_dict,
-#         200
-#     )
-
-#     return response
 
 class Products(Resource):
     def get(self):
@@ -91,6 +92,7 @@ class Products(Resource):
         category = data.get('category')
         # seller_id = data.get('seller_id')
         shop_id = data.get('shop_id')
+
 
         product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
         db.session.add(product)
@@ -117,6 +119,16 @@ class Images(Resource):
 
         return make_response(
             image.to_dict(),
+            200
+        )
+    
+class ShopIndex(Resource):
+    def get(self, id):
+
+        shop = Shop.query.filter(Shop.id == id).first()
+
+        return make_response(
+            shop.to_dict(),
             200
         )
     
@@ -151,6 +163,16 @@ class Shops(Resource):
 
         return make_response(
             shop.to_dict(),
+            200
+        )
+    
+class OrderIndex(Resource):
+    def get(self, id):
+
+        order = Order.query.filter(Order.id == id).first()
+
+        return make_response(
+            order.to_dict(),
             200
         )
 
@@ -272,7 +294,6 @@ class Reviews(Resource):
 
         
 
-
 class Hello(Resource):
     def get(self):
         hello = 'Hello World!'
@@ -281,7 +302,10 @@ class Hello(Resource):
             200
         )
 
+api.add_resource(OrderIndex, '/order/<int:id>')
+api.add_resource(Users, '/users')
 api.add_resource(ProductIndex, '/product/<int:id>')
+api.add_resource(ShopIndex, '/shop/<int:id>')
 api.add_resource(Products, '/products')
 api.add_resource(SignUp, '/signup' )
 api.add_resource(Login, '/login')
