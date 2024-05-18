@@ -142,8 +142,10 @@ class Shops(Resource):
         logo_image_url = data.get('logo_image_url')
         banner_image_url = data.get('banner_image_url')
         seller_id = data.get('seller_id')
+        contact = data.get('contact')
+        location = data.get('location')
 
-        shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id)
+        shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id, contact=contact, location=location)
         db.session.add(shop)
         db.session.commit()
 
