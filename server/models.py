@@ -56,7 +56,7 @@ class Shop(db.Model, SerializerMixin):
     # A shop can have many products 
     products = db.relationship('Product', back_populates='shop', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-products.shop', '-seller.reviews_received', '-seller.shop')
+    serialize_rules = ('-products.shop', '-seller.shop')
 
     def __repr__(self):
         return f'<Shop {self.name} owned by {self.seller_id}>'
@@ -77,7 +77,7 @@ class Product(db.Model, SerializerMixin):
     images = db.relationship('ProductsImages', back_populates='product', lazy='select', cascade="all, delete-orphan")
     reviews = db.relationship('Review', back_populates='product', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product')
+    serialize_rules = ('-shop.products', '-items.product', '-images.product', '-reviews.product')
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
@@ -103,7 +103,7 @@ class OrderItem(db.Model, SerializerMixin):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     product = db.relationship("Product", back_populates='items')
 
-    serialize_rules = ('-order.order_items','-product.items')
+    serialize_rules = ('-order.order_items', '-product.items')
 
     def __repr__(self):
         return f'<OrderItem {self.id}>'
@@ -115,7 +115,6 @@ class Order(db.Model, SerializerMixin):
     status = db.Column(db.String, nullable=False)  #'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
     delivery_address = db.Column(db.String)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
     
     buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     buyer = db.relationship('User', back_populates='my_orders', foreign_keys=[buyers_id], lazy='joined')
@@ -125,9 +124,12 @@ class Order(db.Model, SerializerMixin):
 
     order_items = db.relationship('OrderItem', back_populates='order', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-order_items.order', '-order_items.product.reviews','-buyer.my_orders','-buyer.reviews_given', '-delivery_person.my_deliveries')
+    serialize_rules = ('-order_items.order', '-buyer.my_orders', '-delivery_person.my_deliveries')
+
+    def get_current_time():
+        return datetime.now(timezone.utc)
     
-    
+    created_at = db.Column(db.DateTime, default=get_current_time, nullable=False)
 
     def __repr__(self):
         return f'<Order {self.id}>'
