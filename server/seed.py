@@ -31,7 +31,7 @@ with app.app_context():
     db.session.commit()
 
     print('Seeding shop...')
-    shop1 = Shop(name="Shoe Store", description="Sells high quality shoes", logo_image_url="https://i.pinimg.com/736x/29/df/c6/29dfc6f05b80804c18913851a79c5140.jpg", banner_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXVdWLD9aHeFLG5UWdmM8XdkNgr_ZENfeFIh7Tv-ZkKMJgiz1hAi5OUj9gQbPlprtBGw&usqp=CAU", seller=rob)
+    shop1 = Shop(name="Shoe Store", description="Sells high quality shoes", logo_image_url="https://i.pinimg.com/736x/29/df/c6/29dfc6f05b80804c18913851a79c5140.jpg", banner_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXVdWLD9aHeFLG5UWdmM8XdkNgr_ZENfeFIh7Tv-ZkKMJgiz1hAi5OUj9gQbPlprtBGw&usqp=CAU", seller=rob, location="Nairobi CBD", contact='0777643916')
     db.session.add(shop1)
     db.session.commit()
 

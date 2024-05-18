@@ -48,6 +48,8 @@ class Shop(db.Model, SerializerMixin):
     description = db.Column(db.Text, nullable=False)
     logo_image_url = db.Column(db.String, nullable=False)
     banner_image_url = db.Column(db.String, nullable=False)
+    location = db.Column(db.String(250), nullable=True)
+    contact = db.Column(db.String(50), nullable=True)
 
     # A shop belongs to a seller 
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
