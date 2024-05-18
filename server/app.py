@@ -55,7 +55,7 @@ class Products(Resource):
             return {"message":"Add products!"}, 404
 
         return make_response(
-            product.to_dict(),
+            products,
             200
         )
     
