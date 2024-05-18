@@ -131,7 +131,6 @@ class Shops(Resource):
             shop.to_dict(),
             200
         )
-
 class Orders(Resource):
     @jwt_required()
     def get(self):
@@ -147,7 +146,7 @@ class Orders(Resource):
         return make_response(
             orders, 
             200
-            )
+        )
     
     @jwt_required()
     def post(self):
@@ -155,26 +154,41 @@ class Orders(Resource):
         if not user_id:
             return {'message': 'User not logged in'}, 401
         
-        data = request.get_json()
-        total_price = data.get('total_price')
-        status = data.get('status')
-        delivery_fee = data.get('delivery_fee')
-        delivery_address = data.get('delivery_address')
-        delivery_id = data.get('delivery_id')  
+        try:
+            data = request.get_json()
+            print(f"Request data: {data}")
+            total_price = data.get('total_price')
+            status = data.get('status')
+            delivery_fee = data.get('delivery_fee')
+            delivery_address = data.get('delivery_address')
+            delivery_id = data.get('delivery_id')  
 
-        # Getting the current time
-        created_at = datetime.now(timezone.utc)
+            if total_price is None or status is None or delivery_address is None:
+                return {'message': 'Missing required fields'}, 400
 
-        order = Order(buyers_id=user_id,  total_price=total_price, status=status, delivery_fee=delivery_fee, 
-            delivery_address=delivery_address, delivery_id=delivery_id,  created_at=created_at
-        )
-        db.session.add(order)
-        db.session.commit()
+            # Getting the current time
+            created_at = datetime.now(timezone.utc)
 
-        return make_response(
-            order.to_dict(), 
-            201
-        )
+            order = Order(
+                buyers_id=user_id, 
+                total_price=total_price,
+                status=status,
+                delivery_fee=delivery_fee,
+                delivery_address=delivery_address,
+                delivery_id=delivery_id,  
+                created_at=created_at
+            )
+            db.session.add(order)
+            db.session.commit()
+
+            return make_response(
+                order.to_dict(), 
+                201
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            return {'message': 'Internal server error'}, 500
+
 
 
 class OrderItems(Resource):
