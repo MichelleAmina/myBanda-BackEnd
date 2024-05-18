@@ -240,6 +240,7 @@ class Shops(Resource):
             if not name or not seller_id:
                 return {"message": "name and seller_id are required fields!"}, 400
 
+<<<<<<< HEAD
             shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id, contact=contact, location=location)
             db.session.add(shop)
             db.session.commit()
@@ -254,6 +255,12 @@ class Shops(Resource):
             return {"message": str(e)}, 500
         
         
+=======
+        return make_response(
+            shop.to_dict(),
+            200
+        )
+>>>>>>> 46568ba (Updated orders)
 class Orders(Resource):
     @jwt_required()
     def get(self):
@@ -267,10 +274,17 @@ class Orders(Resource):
             if not orders:
                 return {"message": "Orders are not added"}, 404
 
+<<<<<<< HEAD
             return make_response(
                 orders, 
                 200
                 )
+=======
+        return make_response(
+            orders, 
+            200
+        )
+>>>>>>> 46568ba (Updated orders)
     
         except Exception as e:
             return {"message": str(e)}, 500
@@ -307,10 +321,48 @@ class Orders(Resource):
             db.session.commit()
             return make_response(order.to_dict(), 201)
         
+<<<<<<< HEAD
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
 
+=======
+        try:
+            data = request.get_json()
+            print(f"Request data: {data}")
+            total_price = data.get('total_price')
+            status = data.get('status')
+            delivery_fee = data.get('delivery_fee')
+            delivery_address = data.get('delivery_address')
+            delivery_id = data.get('delivery_id')  
+
+            if total_price is None or status is None or delivery_address is None:
+                return {'message': 'Missing required fields'}, 400
+
+            # Getting the current time
+            created_at = datetime.now(timezone.utc)
+
+            order = Order(
+                buyers_id=user_id, 
+                total_price=total_price,
+                status=status,
+                delivery_fee=delivery_fee,
+                delivery_address=delivery_address,
+                delivery_id=delivery_id,  
+                created_at=created_at
+            )
+            db.session.add(order)
+            db.session.commit()
+
+            return make_response(
+                order.to_dict(), 
+                201
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            return {'message': 'Internal server error'}, 500
+
+>>>>>>> 46568ba (Updated orders)
 
 
 class OrderItems(Resource):
