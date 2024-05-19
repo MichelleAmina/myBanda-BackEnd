@@ -58,6 +58,19 @@ class Users(Resource):
             users,
             200
         )
+
+class UserIndex(Resource):
+    def get(self, id):
+
+        user = User.query.filter(User.id == id).first()
+
+        if not user:
+            return {"message":"User does not exist!"}, 404
+
+        return make_response(
+            user.to_dict(),
+            200
+        )
         
 class ProductIndex(Resource):
     def get(self, id):
@@ -304,6 +317,7 @@ class Hello(Resource):
             200
         )
 
+api.add_resource(UserIndex, '/user/<int:id>')
 api.add_resource(OrderIndex, '/order/<int:id>')
 api.add_resource(Users, '/users')
 api.add_resource(ProductIndex, '/product/<int:id>')
