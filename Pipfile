@@ -24,6 +24,8 @@ Faker = "*"
 python-dotenv = "*"
 Flask-JWT-Extended = "*"
 flask-session = "*"
+flask-mpesa = "*"
+requests = "*"
 
 [dev-packages]
 

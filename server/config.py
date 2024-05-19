@@ -12,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 import os
 from flask_session import Session
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_mpesa import MpesaAPI
 # from jwt.exceptions import DecodeErrors
 
 from dotenv import load_dotenv
@@ -27,6 +28,9 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=72)
 app.config['JWT_COOKIE_SECURE'] = False
 app.config['SESSION_TYPE'] = 'filesystem' 
 app.json.compact = False
+app.config["API_ENVIRONMENT"] = "sandbox"
+app.config["APP_KEY"] = "KaDetUGGhUCIlhHqmmvGfKFDSHXsL4GpvAsbR3s0Z6VjdOS8"
+app.config["APP_SECRET"] = "CfUuAoAi3exAyAF0yju9P9zSaAzLAYtIfgHjsMnAVoad5ASGnqqRyDbJGRDtykX8"
 
 metadata = MetaData(naming_convention={
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
@@ -38,6 +42,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 api = Api(app)
 bcrypt = Bcrypt(app)
+mpesa_api = MpesaAPI(app)
 CORS(app)
 Session(app)
 

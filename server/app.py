@@ -1,6 +1,6 @@
-from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
+from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api
 import json
 
 class SignUp(Resource):
@@ -307,7 +307,94 @@ class Reviews(Resource):
             201
             )
 
+class STK(Resource):
+    def get(self):
+        number = "254700622570"
+        amount = '1'
+
+        data = {
+        "business_shortcode": "174379",
+        "passcode": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+        "amount": amount,
+        "phone_number": number,
+        "reference_code": "Banda",
+        "callback_url": "https://mybanda-backend-88l2.onrender.com/stk",
+        "description": "Reverse afterwards"
+        }
+        resp = mpesa_api.MpesaExpress.stk_push(**data)
+        return jsonify(resp),200
+    
+    def post(self):
+        json_data = request.get_json()
+        result_code = json_data["Body"]["stkCallback"]["ResultCode"]
+        message = {
+            "ResultCode": result_code,
+            "ResultDesc": "success",
+            "ThirdPartyTransID": "h234k2h4krhk2"
+        }
+
+        if result_code == 0:
+            amt = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][0]["Value"]
+            code = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][1]["Value"]
+            date = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][2]["Value"]
+            num = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][3]["Value"]
+
+            transaction = Transaction(Amount=amt, MpesaReceiptNumber=code, TransactionDate=date, PhoneNumber=num)
+            db.session.add(transaction)
+            db.session.commit()
+
+        print(json_data)
+        return jsonify(message),200
+    
+class Paybill(Resource):
+    def get(self):
+        number = "254700622570"
+        amount = '1'
+
+        reg_data={
+            "shortcode": "174379",
+            "response_type": "Completed",
+            "validation_url": "https://mybanda-backend-88l2.onrender.com/paybill"
+        }
+        v = mpesa_api.C2B.register(**reg_data)
+
+        test_data={
+            "shortcode": "174379",
+            "command_id": "CustomerBuyGoodsOnline",
+            "amount": amount,
+            "msisdn": number,
+            "bill_ref_number": "Banda goods payment"
+        }
+        new_v = mpesa_api.C2B.simulate(**test_data)
+        return jsonify(new_v), 200
+    
+    def post(self):
+        json_data = request.get_json()
+
+        code = json_data["TransID"]
+        date = json_data["TransTime"]
+        num = json_data["MSISDN"]
+        amt = json_data["TransAmount"]
+
+        transaction = Transaction(Amount=amt, MpesaReceiptNumber=code, TransactionDate=date, PhoneNumber=num)
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify(json_data), 200
+
+class Transactions(Resource):
+    def get(self):
+        transaction = [transaction.to_dict() for transaction in Transaction.query.all()]
         
+        if not transaction:
+            return {"message": "Transactions not yet added"}, 404
+
+        return make_response(
+            transaction, 
+            200
+            )
+
+
 
 class Hello(Resource):
     def get(self):
@@ -317,6 +404,10 @@ class Hello(Resource):
             200
         )
 
+
+api.add_resource(Transactions, '/transactions')
+api.add_resource(Paybill, '/paybill') 
+api.add_resource(STK, '/stk')
 api.add_resource(UserIndex, '/user/<int:id>')
 api.add_resource(OrderIndex, '/order/<int:id>')
 api.add_resource(Users, '/users')

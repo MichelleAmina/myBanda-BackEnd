@@ -154,3 +154,13 @@ class Review(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
+    
+class Transaction(db.Model):
+    __tablename__ = 'transaction'
+
+    id = db.Column(db.Integer, primary_key=True)
+    MpesaReceiptNumber = db.Column(db.String)
+    Amount = db.Column(db.Integer)
+    TransactionDate = db.Column(db.Integer)
+    PhoneNumber = db.Column(db.Integer)
+
