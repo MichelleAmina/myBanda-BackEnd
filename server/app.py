@@ -87,15 +87,17 @@ class Products(Resource):
         name = data.get('name')
         description = data.get('description')
         price = data.get('price')
-        # image_url = data.get('image_url')
+        image_url = data.get('image_url')
         quantity_available = data.get('quantity_available')
         category = data.get('category')
-        # seller_id = data.get('seller_id')
         shop_id = data.get('shop_id')
 
 
         product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
         db.session.add(product)
+        db.session.commit()
+        image = ProductsImages(image_url=image_url, product=product)
+        db.session.add(image)
         db.session.commit()
 
         response = "Added succesfully"
