@@ -26,6 +26,7 @@ Flask-JWT-Extended = "*"
 flask-session = "*"
 flask-mpesa = "*"
 requests = "*"
+flask-mail = "*"
 
 [dev-packages]
 

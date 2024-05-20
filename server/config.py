@@ -1,4 +1,4 @@
-from flask import Flask, request, session, jsonify, make_response
+from flask import Flask, request, session, jsonify, make_response, url_for
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -54,5 +54,3 @@ mpesa_api = MpesaAPI(app)
 mail = Mail(app)
 CORS(app)
 Session(app)
-
-

@@ -23,8 +23,14 @@ class User(db.Model, SerializerMixin):
 
     # One to one relationship with shop
     shop = db.relationship('Shop', back_populates='seller', uselist=False, cascade="all, delete-orphan", lazy='select')
-    
-    serialize_rules = ('-_password_hash', '-reviews_given.buyer', '-reviews_received.seller', '-my_orders.buyer', '-my_deliveries.delivery_person', '-shop.seller')
+
+    #Likedproduct relatioship
+    liked_products = db.relationship('LikedProduct', back_populates='buyer', cascade='all, delete-orphan')
+
+    #Followed shops relationship
+    followed_shops = db.relationship('FollowedShop', back_populates='buyer', cascade='all, delete-orphan')
+
+    serialize_rules = ('-_password_hash', '-reviews_given.buyer', '-reviews_received.seller', '-my_orders.buyer', '-my_deliveries.delivery_person', '-shop.seller', '-liked_products.buyer', '-followed_shops.buyer')
 
     @hybrid_property
     def password_hash(self):
@@ -58,6 +64,9 @@ class Shop(db.Model, SerializerMixin):
     # A shop can have many products 
     products = db.relationship('Product', back_populates='shop', lazy='select', cascade="all, delete-orphan")
 
+    #People who follow the shop
+    followers = db.relationship('FollowedShop', back_populates='shop', lazy='select', cascade="all, delete-orphan")
+
     serialize_rules = ('-products.shop', '-seller.reviews_received', '-seller.shop')
 
     def __repr__(self):
@@ -77,10 +86,11 @@ class Product(db.Model, SerializerMixin):
     # Relationships
     shop = db.relationship('Shop', back_populates='products')
     items = db.relationship('OrderItem', back_populates='product', lazy='select', cascade="all, delete-orphan")
+    likes = db.relationship('LikedProduct', back_populates='product', lazy='select', cascade="all, delete-orphan")
     images = db.relationship('ProductsImages', back_populates='product', lazy='select', cascade="all, delete-orphan")
     reviews = db.relationship('Review', back_populates='product', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product')
+    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product', '-likes.product')
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
@@ -133,6 +143,35 @@ class Order(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'<Order {self.id}>'
+    
+    
+class LikedProduct(db.Model, SerializerMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    buyer = db.relationship('User', back_populates='liked_products')
+
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product = db.relationship("Product", back_populates='likes')
+
+    serialize_rules = ('-buyer.liked_products', '-product.likes', '-buyer.reviews_given', '-buyer.reviews_received')
+
+    def __repr__(self):
+        return f'<LikedProduct {self.id}>'
+
+class FollowedShop(db.Model, SerializerMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    buyer = db.relationship('User', back_populates='followed_shops')
+
+    shop_id = db.Column(db.Integer, db.ForeignKey('shop.id'), nullable=False)
+    shop = db.relationship("Shop", back_populates='followers')
+
+    serialize_rules = ('-buyer.followed_shops', '-shop.followers', '-buyer.reviews_given', '-buyer.reviews_received')
+
+    def __repr__(self):
+        return f'<FollwedShop {self.id}>'
 
 
 class Review(db.Model, SerializerMixin):
@@ -154,6 +193,7 @@ class Review(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
+    
     
 class Transaction(db.Model):
     __tablename__ = 'transaction'
