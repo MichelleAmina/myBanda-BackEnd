@@ -155,9 +155,7 @@ class ShopIndex(Resource):
         )
     
 class Shops(Resource):
-
     def get(self):
-    
         shops = [shops.to_dict() for shops in Shop.query.all()]
 
         if not shops:
@@ -396,7 +394,7 @@ class Reviews(Resource):
 
 class STK(Resource):
     def get(self):
-        number = "254796277018"
+        number = "254700622570"
         amount = '2'
 
         data = {
