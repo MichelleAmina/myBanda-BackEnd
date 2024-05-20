@@ -1,4 +1,7 @@
-from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta
+from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta, Serializer, app
+from itsdangerous import URLSafeSerializer
+
+
 
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -8,6 +11,32 @@ class User(db.Model, SerializerMixin):
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
     role = db.Column(db.String, nullable=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+
+
+    ## Getting the token for reset password route
+    # def get_token(self):
+    #     s = Serializer(app.config['SECRET_KEY'], expires_in=1800)
+    #     return s.dumps({'user_id': str(self.id)}).decode('utf-8')
+    
+    def get_token(self):
+        s = Serializer(app.config['SECRET_KEY'], salt='reset-password')
+        expiration_time = datetime.utcnow() + timedelta(seconds=1800)  # 1800 seconds = 30 minutes
+        token_data = {'user_id': self.id, 'exp': expiration_time.isoformat()}
+        token = s.dumps(token_data)
+        return token
+
+
+    @staticmethod
+    def verify_token(token):
+        s = Serializer(app.config['JWT_SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
+    def __repr__(self):
+        return f'<User {self.email} of role {self.role}>'
 
     # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)
