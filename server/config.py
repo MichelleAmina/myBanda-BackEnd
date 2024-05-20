@@ -13,6 +13,9 @@ import os
 from flask_session import Session
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_mpesa import MpesaAPI
+from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+from flask_mail import Mail
+from flask_mail import Message
 # from jwt.exceptions import DecodeErrors
 
 from dotenv import load_dotenv
@@ -31,6 +34,11 @@ app.json.compact = False
 app.config["API_ENVIRONMENT"] = "sandbox"
 app.config["APP_KEY"] = "KaDetUGGhUCIlhHqmmvGfKFDSHXsL4GpvAsbR3s0Z6VjdOS8"
 app.config["APP_SECRET"] = "CfUuAoAi3exAyAF0yju9P9zSaAzLAYtIfgHjsMnAVoad5ASGnqqRyDbJGRDtykX8"
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'youremail@gmail.com'
+app.config['MAIL_PASSWORD'] = 'password*123'
 
 metadata = MetaData(naming_convention={
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
@@ -43,8 +51,8 @@ jwt = JWTManager(app)
 api = Api(app)
 bcrypt = Bcrypt(app)
 mpesa_api = MpesaAPI(app)
+mail = Mail(app)
 CORS(app)
 Session(app)
-
 
 
