@@ -310,7 +310,7 @@ class Reviews(Resource):
 class STK(Resource):
     def get(self):
         number = "254796277018"
-        amount = '1'
+        amount = '2'
 
         data = {
         "business_shortcode": "174379",
