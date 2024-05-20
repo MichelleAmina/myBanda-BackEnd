@@ -309,7 +309,7 @@ class Reviews(Resource):
 
 class STK(Resource):
     def get(self):
-        number = "254700622570"
+        number = "254796277018"
         amount = '1'
 
         data = {
@@ -322,7 +322,7 @@ class STK(Resource):
         "description": "Reverse afterwards"
         }
         resp = mpesa_api.MpesaExpress.stk_push(**data)
-        return jsonify(resp),200
+        return resp,200
     
     def post(self):
         json_data = request.get_json()
@@ -344,11 +344,11 @@ class STK(Resource):
             db.session.commit()
 
         print(json_data)
-        return jsonify(message),200
+        return message,200
     
 class Paybill(Resource):
     def get(self):
-        number = "254700622570"
+        number = "254796277018"
         amount = '1'
 
         reg_data={
