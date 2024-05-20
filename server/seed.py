@@ -21,9 +21,9 @@ with app.app_context():
     # sellers
     rob = User(username="robins", email="rob@gmail.com", location="", contact="" ,role="seller")
     rob.password_hash = "seller"
-    ndanu = User(username="ndanu", email="ndanu@gmail.com", lacation="", contact="", role="seller")
+    ndanu = User(username="ndanu", email="ndanu@gmail.com", location="", contact="", role="seller")
     ndanu.password_hash = "seller2"
-    john = User(username="john", email="john@gmail.com", lacation="", contact="", role="seller")
+    john = User(username="john", email="john@gmail.com", location="", contact="", role="seller")
     john.password_hash = "seller3"
 
     # buyers
@@ -39,7 +39,7 @@ with app.app_context():
     vic.password_hash = "bolt"
     sam = User(username="boda", email="sam@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
     sam.password_hash = "bolt2"
-    kevin = User(username="boda", email="kevin@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    kevin = User(username="kevin", email="kevin@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
     kevin.password_hash = "bolt3"
 
     # admin
@@ -70,7 +70,8 @@ with app.app_context():
                  logo_image_url="https://i.pinimg.com/236x/94/bf/34/94bf3444f7683e20d2b78693f09e9c31.jpg", 
                  banner_image_url="https://i.pinimg.com/236x/1c/07/ab/1c07abe2f1eac35e1d00a623e85deb28.jpg", 
                  seller=john)
-    db.session.add_all(shop1, shop2, shop3)
+    shops = [shop1, shop2, shop3]
+    db.session.add_all(shops)
     db.session.commit()
 
     print('Seeding products...')
