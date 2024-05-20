@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mail, Message, url_for
 import json
 
 
@@ -187,6 +187,35 @@ class Orders(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
+        
+        
+    @jwt_required()
+    def patch(self, order_id):
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
+
+            data = request.get_json()
+            new_status = data.get('status')
+
+            if not new_status:
+                return {'message': 'New status not provided'}, 400
+
+            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
+            if not order:
+                return {'message': 'Order not found'}, 404
+
+            order.status = new_status
+            db.session.commit()
+
+            return make_response(order.to_dict(), 200)
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
+        
+        
+        
 
 
 
@@ -289,8 +318,99 @@ class Reviews(Resource):
             return {"message": str(e)}, 500
 
 
+class OrderDetail(Resource):
+    @jwt_required()
+    def get(self, order_id):
+        try:
+            user_id = session.get('user_id')
+            order = Order.query.filter_by(id=order_id, user_id=user_id).first()
+            if not order:
+                return {"message": "Order not found"}, 404
+
+            return order.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
         
 
+class ProductsById(Resource):
+    def get(self, id):
+        try:
+            product = Product.query.filter_by(id=id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
+            return product.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+    
+    def patch(self, id):
+        try:
+            data = request.get_json()
+            product = Product.query.filter_by(id=id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
+
+            for key, value in data.items():
+                setattr(product, key, value)
+            db.session.commit()
+
+            return product.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+
+
+class ResetPassword(Resource):
+    # def post(self):
+    #     data = request.get_json()
+    #     email = data.get('email')
+        
+    #     if not email:
+    #         return {'message': 'Please input your email address'}, 400
+        
+    #     user = User.query.filter_by(email=email).first()
+    #     if user:
+    #         send_mail(user)
+    #     return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
+    pass
+
+def send_mail(user):
+    token = user.get_token()
+    msg = Message('Password Reset Request', recipients=[user.email], sender='noreply@example.com')
+    msg.body = f'''To reset your password, visit the following link:
+    {url_for('recivetoken', token=token, _external=True)}
+    If you did not make this request then simply ignore this email and no changes will be made.
+    '''
+    
+    print(f'Test token for {user.email}: {token}')
+    mail.send(msg)
+
+
+
+
+class ReciveToken(Resource):
+    # def get(self, token):
+    #     user = User.verify_token(token)
+    #     if not user:
+    #         return {"message": "Invalid token"}, 401
+    #     return {"message": "Token is valid"}, 200
+    pass
+
+
+class ChangePassword(Resource):
+    # def post(self):
+    #     data = request.get_json()
+    #     token = data.get('token')
+    #     new_password = data.get('password')
+        
+    #     user = User.verify_token(token)
+    #     if not user:
+    #         return {"message": "Invalid token"}, 401
+
+    #     user.password_hash = new_password
+    #     db.session.commit()
+    #     return {"message": "Password has been reset successfully"}, 200
+    pass
+
+     
 
 class Hello(Resource):
     def get(self):
@@ -309,6 +429,13 @@ api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
 api.add_resource(Reviews, '/review')
+api.add_resource(ProductsById, '/products/<int:id>')
+api.add_resource(OrderDetail, '/orders/<int:order_id>')
+api.add_resource(ResetPassword, '/reset-password')
+api.add_resource(ReciveToken, '/reset-password/<token>')
+api.add_resource(ChangePassword, '/change-password')
+
+
 
 
 
