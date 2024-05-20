@@ -19,31 +19,31 @@ with app.app_context():
     
     print('Seeding user...')
     # sellers
-    rob = User(username="robins", email="rob@gmail.com", location="", contact="" ,role="seller")
+    rob = User(username="robins", email="rob@gmail.com", location="Nairobi", contact="12345" ,role="seller")
     rob.password_hash = "seller"
-    ndanu = User(username="ndanu", email="ndanu@gmail.com", lacation="", contact="", role="seller")
+    ndanu = User(username="ndanu", email="ndanu@gmail.com", lacation="Kisumu", contact="12345", role="seller")
     ndanu.password_hash = "seller2"
-    john = User(username="john", email="john@gmail.com", lacation="", contact="", role="seller")
+    john = User(username="john", email="john@gmail.com", lacation="Nakuru", contact="12345", role="seller")
     john.password_hash = "seller3"
 
     # buyers
-    mike = User(username="michael", email="mikemumo333@gmail.com", location="", contact="", role="buyer")
+    mike = User(username="michael", email="mikemumo333@gmail.com", location="Nairobi", contact="0700000000", role="buyer")
     mike.password_hash = "buyer"
-    michelle = User(username="michelle", email="michelle@gmail.com", location="", contact="", role="buyer")
+    michelle = User(username="michelle", email="michelle@gmail.com", location="Kisumu", contact="0700000001", role="buyer")
     michelle.password_hash = "buyer2"
-    james = User(username="james", email="james@gmail.com", location="", contact="", role="buyer")
+    james = User(username="james", email="james@gmail.com", location="Nakuru", contact="0700000002", role="buyer")
     james.password_hash = "buyer3"
 
     # devlivery
-    vic = User(username="victor", email="victor@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    vic = User(username="victor", email="victor@gmail.com", location="Nairobi", contact="0700000004", role="delivery", is_banda_delivery=True)
     vic.password_hash = "bolt"
-    sam = User(username="boda", email="sam@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    sam = User(username="boda", email="sam@gmail.com", location="Kisumu", contact="0700000005", role="delivery", is_banda_delivery=True)
     sam.password_hash = "bolt2"
-    kevin = User(username="boda", email="kevin@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    kevin = User(username="boda", email="kevin@gmail.com", location="Nakuru", contact="0700000006", role="delivery", is_banda_delivery=True)
     kevin.password_hash = "bolt3"
 
     # admin
-    kinsi = User(username="kinsi", email="kinsi@gmail.com", location="", contact="", role="admin", is_banda_admin=True)
+    kinsi = User(username="kinsi", email="kinsi@gmail.com", location="Nairobi", contact="0710101010", role="admin", is_banda_admin=True)
     kinsi.password_hash = "admin"
     
 
@@ -57,18 +57,18 @@ with app.app_context():
     print('Seeding shop...')
     shop1 = Shop(name="Shoe Store", 
                  description="Sells high quality shoes", 
-                 logo_image_url="https://i.pinimg.com/736x/29/df/c6/29dfc6f05b80804c18913851a79c5140.jpg", 
-                 banner_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXVdWLD9aHeFLG5UWdmM8XdkNgr_ZENfeFIh7Tv-ZkKMJgiz1hAi5OUj9gQbPlprtBGw&usqp=CAU", 
+                 logo_image_url="https://i.pinimg.com/564x/c2/09/69/c20969c7c0e5b5c6f0f74d64395dadd4.jpg", 
+                 banner_image_url="https://i.pinimg.com/564x/0d/8a/3a/0d8a3a79902c2460f0b163147293445c.jpg", 
                  seller=rob)
     shop2 = Shop(name="Electronic Store", 
                  description="Good electronics", 
                  logo_image_url="https://i.pinimg.com/564x/43/ae/10/43ae10daf5a34ca7409a1abccc189e94.jpg", 
-                 banner_image_url="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/25b82a98751115.5ee311e05d5ed.jpg", 
+                 banner_image_url="https://i.pinimg.com/564x/33/11/5a/33115a1961b4b4415af899e8565b951e.jpg", 
                  seller=ndanu)
     shop3 = Shop(name="foodies", 
                  description="sweet food", 
-                 logo_image_url="https://i.pinimg.com/236x/94/bf/34/94bf3444f7683e20d2b78693f09e9c31.jpg", 
-                 banner_image_url="https://i.pinimg.com/236x/1c/07/ab/1c07abe2f1eac35e1d00a623e85deb28.jpg", 
+                 logo_image_url="https://i.pinimg.com/736x/c0/80/32/c08032a93c896fe253588ee9c0bb6f97.jpg", 
+                 banner_image_url="https://i.pinimg.com/736x/c7/31/23/c7312307e19b84d78f914da20dfef7b1.jpg", 
                  seller=john)
     db.session.add_all(shop1, shop2, shop3)
     db.session.commit()
