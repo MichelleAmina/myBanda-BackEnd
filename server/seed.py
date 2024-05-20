@@ -1,9 +1,13 @@
 from models import User, Shop, Product, Order, OrderItem, Review, ProductsImages
 from config import app, db
+import datetime
 
 
 with app.app_context():
     print('Clearing database...')
+    OrderItem.query.delete()
+    Order.query.delete()
+    Review.query.delete()
     ProductsImages.query.delete()
     db.session.commit()
     Product.query.delete()
@@ -14,11 +18,15 @@ with app.app_context():
     db.session.commit()
     
     print('Seeding user...')
-    rob = User(username="robbins", email="rob@gmail.com", location="", contact="" ,role="seller")
-    rob.password_hash = "strong"
-    mike = User(username="mike", email="mikemumo333@gmail.com", location="", contact="", role="buyer")
-    mike.password_hash = "empty"
-    users = [rob, mike]
+    rob = User(username="robins", email="rob@gmail.com", location="", contact="" ,role="seller")
+    rob.password_hash = "seller"
+    mike = User(username="michael", email="mikemumo333@gmail.com", location="", contact="", role="buyer")
+    mike.password_hash = "buyer"
+    vic = User(username="victor", email="victor@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    vic.password_hash = "bolt"
+    kinsi = User(username="kinsi", email="kinsi@gmail.com", location="", contact="", role="admin", is_banda_admin=True)
+    kinsi.password_hash = "admin"
+    users = [rob, mike, vic, kinsi]
     db.session.add_all(users)
     db.session.commit()
 
@@ -133,13 +141,29 @@ with app.app_context():
     db.session.commit()
 
     print("Seeding reviews...")
-    lamp_review_1 = Review(content='The lighting is perfect for the bedside. Great customer service too.', rating=5, buyer=mike, seller=rob, product=lamp)
-    lamp_review_2 = Review(content='The actual product is nothing like the image shown. The buyer has also been frustrating on getting my refund.', rating=1, buyer=mike, seller=rob, product=lamp)
-    lamp_review_3 = Review(content='Meeh. Does the lighting, but it\'s not all that.', rating=3, buyer=mike, seller=rob, product=lamp)
-    laptop_review_1 = Review(content='Wonderful. I\'ve had it for 5 years and still works like brand new.', rating=5, buyer=mike, seller=rob, product=laptop)
-    laptop_review_2 = Review(content='I am still waiting for over a year now to get my laptop delivered after paying. Scammer!!!!!', rating=1, buyer=mike, seller=rob, product=laptop)
-    laptop_review_3 = Review(content='Great for the price. A bit laggy though.', rating=3, buyer=mike, seller=rob, product=laptop)
+    lamp_review_1 = Review(content='The lighting is perfect for the bedside. Great customer service too.', rating=5, buyer=mike, seller=rob, product=lamp, date=str(datetime.datetime.now()))
+    lamp_review_2 = Review(content='The actual product is nothing like the image shown. The buyer has also been frustrating on getting my refund.', rating=1, buyer=mike, seller=rob, product=lamp, date=str(datetime.datetime.now()))
+    lamp_review_3 = Review(content='Meeh. Does the lighting, but it\'s not all that.', rating=3, buyer=mike, seller=rob, product=lamp, date=str(datetime.datetime.now()))
+    laptop_review_1 = Review(content='Wonderful. I\'ve had it for 5 years and still works like brand new.', rating=5, buyer=mike, seller=rob, product=laptop, date=str(datetime.datetime.now()))
+    laptop_review_2 = Review(content='I am still waiting for over a year now to get my laptop delivered after paying. Scammer!!!!!', rating=1, buyer=mike, seller=rob, product=laptop, date=str(datetime.datetime.now()))
+    laptop_review_3 = Review(content='Great for the price. A bit laggy though.', rating=3, buyer=mike, seller=rob, product=laptop, date=str(datetime.datetime.now()))
     reviews = [lamp_review_1, lamp_review_2, lamp_review_3, laptop_review_1, laptop_review_2, laptop_review_3]
     db.session.add_all(reviews)
     db.session.commit()
-    
+
+    print("Seeding order...")
+    order_1 = Order(total_price=1000, status='pending', delivery_fee=100, buyer=mike, delivery_person=vic)
+    order_2 = Order(total_price=2000, status='pending', delivery_fee=350, buyer=mike, delivery_person=vic)
+    order_3 = Order(total_price=3000, status='pending', delivery_fee=700, buyer=mike, delivery_person=vic)
+    orderz = [order_1, order_2, order_3]
+    db.session.add_all(orderz)
+    db.session.commit()
+
+    print("Seeding order items...")
+    lamp_order_1= OrderItem(quantity=1, order=order_1, product=lamp)
+    painting_order_1= OrderItem(quantity=2, order=order_1, product=painting)
+    tv_order_1= OrderItem(quantity=3, order=order_2, product=tv)
+    laptop_order_1= OrderItem(quantity=4, order=order_3, product=laptop)
+    orders = [lamp_order_1, painting_order_1, tv_order_1, laptop_order_1]
+    db.session.add_all(orders)
+    db.session.commit()

@@ -22,6 +22,9 @@ def delete_all():
             db.session.delete(image)
 
         print('Clearing database...')
+        OrderItem.query.delete()
+        Order.query.delete()
+        Review.query.delete()
         ProductsImages.query.delete()
         db.session.commit()
         Product.query.delete()

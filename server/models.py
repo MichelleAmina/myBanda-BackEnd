@@ -1,35 +1,63 @@
-from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt
+from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta, Serializer, app
+from itsdangerous import URLSafeSerializer
 
 
-# User class with details obtained on registration 
+
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     _password_hash = db.Column(db.String(255), nullable=False)
-    location = db.Column(db.String(250), nullable=True )
+    location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
     role = db.Column(db.String, nullable=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
 
-    # Additional fields for Banda Admin and Delivery
-    # Preset to false until registration / login
+
+    ## Getting the token for reset password route
+    # def get_token(self):
+    #     s = Serializer(app.config['SECRET_KEY'], expires_in=1800)
+    #     return s.dumps({'user_id': str(self.id)}).decode('utf-8')
+    
+    def get_token(self):
+        s = Serializer(app.config['SECRET_KEY'], salt='reset-password')
+        expiration_time = datetime.utcnow() + timedelta(seconds=1800)  # 1800 seconds = 30 minutes
+        token_data = {'user_id': self.id, 'exp': expiration_time.isoformat()}
+        token = s.dumps(token_data)
+        return token
+
+
+    @staticmethod
+    def verify_token(token):
+        s = Serializer(app.config['JWT_SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
+    def __repr__(self):
+        return f'<User {self.email} of role {self.role}>'
+
+    # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)
     is_banda_delivery = db.Column(db.Boolean, default=False)
 
-    # Relationship for shop
-    # A user, specifically a seller will have a shop 
-    shop = db.relationship('Shop', back_populates='seller', uselist=False, cascade="all, delete-orphan", lazy=True)
-
     # Relationships for reviews
-    reviews_given = db.relationship('Review', backref='buyer', foreign_keys='Review.buyer_id', lazy=True)
-    reviews_received = db.relationship('Review', backref='seller', foreign_keys='Review.seller_id', lazy=True)
-    
-    serialize_rules = ('-reviews_given.buyer', '-reviews_received.seller', '-_password_hash')
+    reviews_given = db.relationship('Review', back_populates='buyer', foreign_keys='Review.buyer_id', lazy='select')
+    reviews_received = db.relationship('Review', back_populates='seller', foreign_keys='Review.seller_id', lazy='select')
 
+    # Order relationships
+    my_orders = db.relationship("Order", back_populates='buyer', foreign_keys='Order.buyers_id', lazy='select')
+    my_deliveries = db.relationship("Order", back_populates='delivery_person', foreign_keys='Order.delivery_id', lazy='select')
+
+    # One to one relationship with shop
+    shop = db.relationship('Shop', back_populates='seller', uselist=False, cascade="all, delete-orphan", lazy='select')
+    
+    serialize_rules = ('-_password_hash', '-reviews_given.buyer', '-reviews_received.seller', '-my_orders.buyer', '-my_deliveries.delivery_person', '-shop.seller')
 
     @hybrid_property
     def password_hash(self):
-        raise Exception('Cannot view password')
+        raise AttributeError('Cannot view password')
 
     @password_hash.setter
     def password_hash(self, password):
@@ -39,13 +67,10 @@ class User(db.Model, SerializerMixin):
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
-
     def __repr__(self):
         return f'<User {self.email} of role {self.role}>'
 
 
-# When a seller is setting up their "shop", these are the input details that they'll post and will be stored in the b
-# Need to decide on whether we'll be using a banner or an image 
 class Shop(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -57,94 +82,104 @@ class Shop(db.Model, SerializerMixin):
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller = db.relationship('User', back_populates='shop')
 
-
     # A shop can have many products 
-    products = db.relationship('Product', back_populates='shop', lazy=True, cascade="all, delete-orphan")
+    products = db.relationship('Product', back_populates='shop', lazy='select', cascade="all, delete-orphan")
+
     serialize_rules = ('-products.shop', '-seller.shop')
 
     def __repr__(self):
         return f'<Shop {self.name} owned by {self.seller_id}>'
 
 
-# Table for products 
 class Product(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    # image_url = db.Column(db.String, nullable=False)
     quantity_available = db.Column(db.Integer, nullable=False)
-    # Add this column for product category
-    category = db.Column(db.String, nullable=False) 
-
-    # Additiona columns to know seller of products as well as shop associated with product
+    category = db.Column(db.String, nullable=False)
     shop_id = db.Column(db.Integer, db.ForeignKey('shop.id'), nullable=False)
+
+    # Relationships
     shop = db.relationship('Shop', back_populates='products')
+    items = db.relationship('OrderItem', back_populates='product', lazy='select', cascade="all, delete-orphan")
+    images = db.relationship('ProductsImages', back_populates='product', lazy='select', cascade="all, delete-orphan")
+    reviews = db.relationship('Review', back_populates='product', lazy='select', cascade="all, delete-orphan")
 
-    orders = db.relationship('OrderItem', backref='product', lazy=True, cascade="all, delete-orphan")
-
-    images = db.relationship('ProductsImages', back_populates='product', cascade="all, delete-orphan")
-    serialize_rules = ('-images.product', '-shop.products', '-reviews.product')
-
-    # Relationship for reviews
-    reviews = db.relationship('Review', backref='product', lazy=True, cascade="all, delete-orphan")
+    serialize_rules = ('-shop.products', '-items.product', '-images.product', '-reviews.product')
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
-    
+
+
 class ProductsImages(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
 
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
     product = db.relationship('Product', back_populates='images')
 
-
-# Table for orders placed 
-class Order(db.Model, SerializerMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String, nullable=False)  # e.g., 'pending', 'shipped', 'delivered'
-    delivery_fee = db.Column(db.String)
-    
-    # Additional field for delivery information, such as address
-    delivery_address = db.Column(db.String, nullable=False)
-
-    # Other additional fields??
-
-    order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return f'<Order {self.id}>'
+    serialize_rules = ('-product.images',)
 
 
-# Association table between the orders and products 
 class OrderItem(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
-    
-    serialize_rules = ('-order', '-product')
 
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    order = db.relationship("Order", back_populates='order_items')
+
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product = db.relationship("Product", back_populates='items')
+
+    serialize_rules = ('-order.order_items', '-product.items')
 
     def __repr__(self):
         return f'<OrderItem {self.id}>'
 
 
-# Review table 
+class Order(db.Model, SerializerMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    total_price = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String, nullable=False)  #'pending', 'assigned', 'dispatched', 'delivered'
+    delivery_fee = db.Column(db.String)
+    delivery_address = db.Column(db.String)
+    
+    buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    buyer = db.relationship('User', back_populates='my_orders', foreign_keys=[buyers_id], lazy='joined')
+
+    delivery_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    delivery_person = db.relationship('User', back_populates='my_deliveries', foreign_keys=[delivery_id], lazy='joined')
+
+    order_items = db.relationship('OrderItem', back_populates='order', lazy='select', cascade="all, delete-orphan")
+
+    serialize_rules = ('-order_items.order', '-buyer.my_orders', '-delivery_person.my_deliveries')
+
+    def get_current_time():
+        return datetime.now(timezone.utc)
+    
+    created_at = db.Column(db.DateTime, default=get_current_time, nullable=False)
+
+    def __repr__(self):
+        return f'<Order {self.id}>'
+
+
 class Review(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer)
+    date = db.Column(db.String)
 
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    buyer = db.relationship('User', back_populates='reviews_given', foreign_keys=[buyer_id], lazy='joined')
+
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    seller = db.relationship('User', back_populates='reviews_received', foreign_keys=[seller_id], lazy='joined')
+
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product = db.relationship('Product', back_populates='reviews', lazy='joined')
     
-    serialize_rules = ('-buyer.reviews_given', '-seller.reviews_received', '-product.reviews')
+    serialize_rules = ('-buyer.reviews_given','-buyer.my_orders', '-seller','-product.reviews')
 
     def __repr__(self):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
-

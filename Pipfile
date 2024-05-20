@@ -24,6 +24,9 @@ Faker = "*"
 python-dotenv = "*"
 Flask-JWT-Extended = "*"
 flask-session = "*"
+flask-mail = "*"
+itsdangerous = "*"
+
 
 [dev-packages]
 
