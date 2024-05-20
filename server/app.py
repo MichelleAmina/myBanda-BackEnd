@@ -465,7 +465,7 @@ class Paybill(Resource):
         db.session.add(transaction)
         db.session.commit()
 
-        return jsonify(json_data), 200
+        return json_data, 200
 
 class Transactions(Resource):
     def get(self):
