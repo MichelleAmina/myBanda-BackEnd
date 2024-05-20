@@ -18,48 +18,86 @@ with app.app_context():
     db.session.commit()
     
     print('Seeding user...')
+    # sellers
     rob = User(username="robins", email="rob@gmail.com", location="", contact="" ,role="seller")
     rob.password_hash = "seller"
+    ndanu = User(username="ndanu", email="ndanu@gmail.com", lacation="", contact="", role="seller")
+    ndanu.password_hash = "seller2"
+    john = User(username="john", email="john@gmail.com", lacation="", contact="", role="seller")
+    john.password_hash = "seller3"
+
+    # buyers
     mike = User(username="michael", email="mikemumo333@gmail.com", location="", contact="", role="buyer")
     mike.password_hash = "buyer"
+    michelle = User(username="michelle", email="michelle@gmail.com", location="", contact="", role="buyer")
+    michelle.password_hash = "buyer2"
+    james = User(username="james", email="james@gmail.com", location="", contact="", role="buyer")
+    james.password_hash = "buyer3"
+
+    # devlivery
     vic = User(username="victor", email="victor@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
     vic.password_hash = "bolt"
+    sam = User(username="boda", email="sam@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    sam.password_hash = "bolt2"
+    kevin = User(username="boda", email="kevin@gmail.com", location="", contact="", role="delivery", is_banda_delivery=True)
+    kevin.password_hash = "bolt3"
+
+    # admin
     kinsi = User(username="kinsi", email="kinsi@gmail.com", location="", contact="", role="admin", is_banda_admin=True)
     kinsi.password_hash = "admin"
-    users = [rob, mike, vic, kinsi]
+    
+
+    users = [rob, ndanu, john,
+            mike, michelle, james, 
+            vic, sam, kevin,
+            kinsi]
     db.session.add_all(users)
     db.session.commit()
 
     print('Seeding shop...')
-    shop1 = Shop(name="Shoe Store", description="Sells high quality shoes", logo_image_url="https://i.pinimg.com/736x/29/df/c6/29dfc6f05b80804c18913851a79c5140.jpg", banner_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXVdWLD9aHeFLG5UWdmM8XdkNgr_ZENfeFIh7Tv-ZkKMJgiz1hAi5OUj9gQbPlprtBGw&usqp=CAU", seller=rob)
-    db.session.add(shop1)
+    shop1 = Shop(name="Shoe Store", 
+                 description="Sells high quality shoes", 
+                 logo_image_url="https://i.pinimg.com/736x/29/df/c6/29dfc6f05b80804c18913851a79c5140.jpg", 
+                 banner_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXVdWLD9aHeFLG5UWdmM8XdkNgr_ZENfeFIh7Tv-ZkKMJgiz1hAi5OUj9gQbPlprtBGw&usqp=CAU", 
+                 seller=rob)
+    shop2 = Shop(name="Electronic Store", 
+                 description="Good electronics", 
+                 logo_image_url="https://i.pinimg.com/564x/43/ae/10/43ae10daf5a34ca7409a1abccc189e94.jpg", 
+                 banner_image_url="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/25b82a98751115.5ee311e05d5ed.jpg", 
+                 seller=ndanu)
+    shop3 = Shop(name="foodies", 
+                 description="sweet food", 
+                 logo_image_url="https://i.pinimg.com/236x/94/bf/34/94bf3444f7683e20d2b78693f09e9c31.jpg", 
+                 banner_image_url="https://i.pinimg.com/236x/1c/07/ab/1c07abe2f1eac35e1d00a623e85deb28.jpg", 
+                 seller=john)
+    db.session.add_all(shop1, shop2, shop3)
     db.session.commit()
 
     print('Seeding products...')
     lamp = Product(name="lamp", description="Bright lamp to illuminate your working space.", price="300", quantity_available="1", category="Home decor", shop=shop1) 
     painting = Product(name="painting", description="Masterpiece by a young artist leaving his heart on the canvas.", price="10000", quantity_available="2", category="Home decor", shop=shop1)
-    tv = Product(name="tv", description="60 inch with OLED display.", price="60000", quantity_available="3", category="Appliances", shop=shop1)
-    microwave = Product(name="microwave", description="10 power levels for all your heating needs.", price="7000", quantity_available="4", category="Appliances", shop=shop1)
-    lawnmower = Product(name="lawnmower", description="3 power settings to cur all your grass in all terrain.", price="12000", quantity_available="5", category="Tools and Hardware", shop=shop1)
-    hammer = Product(name="hammer", description="Stainless steel free of rust and study for all your household needs.", price="800", quantity_available="6", category="Tools and Hardware", shop=shop1)
+    tv = Product(name="tv", description="60 inch with OLED display.", price="60000", quantity_available="3", category="Appliances", shop=shop2)
+    microwave = Product(name="microwave", description="10 power levels for all your heating needs.", price="7000", quantity_available="4", category="Appliances", shop=shop2)
+    lawnmower = Product(name="lawnmower", description="3 power settings to cur all your grass in all terrain.", price="12000", quantity_available="5", category="Tools and Hardware", shop=shop3)
+    hammer = Product(name="hammer", description="Stainless steel free of rust and study for all your household needs.", price="800", quantity_available="6", category="Tools and Hardware", shop=shop3)
     dress = Product(name="dress", description="Flowing dresses to bring out your inner beauty.", price="2200", quantity_available="7", category="Clothing", shop=shop1)
     shoe = Product(name="shoe", description="White with laces.", price="1000", quantity_available="8", category="Clothing", shop=shop1)
-    watch = Product(name="watch", description="Handmade and state of the art technology.", price="5000", quantity_available="9", category="Accessories", shop=shop1)
-    ring  = Product(name="ring", description="Diamond to show how much your love persists.", price="250", quantity_available="10", category="Accessories", shop=shop1)
-    lipstick = Product(name="lipstick", description="Wear your courage boldly!", price="1000", quantity_available="11", category="Beauty and Skincare", shop=shop1)
-    mascara = Product(name="mascara", description="They'll all stare.", price="1200", quantity_available="12", category="Beauty and Skincare", shop=shop1)
+    watch = Product(name="watch", description="Handmade and state of the art technology.", price="5000", quantity_available="9", category="Accessories", shop=shop2)
+    ring  = Product(name="ring", description="Diamond to show how much your love persists.", price="250", quantity_available="10", category="Accessories", shop=shop2)
+    lipstick = Product(name="lipstick", description="Wear your courage boldly!", price="1000", quantity_available="11", category="Beauty and Skincare", shop=shop3)
+    mascara = Product(name="mascara", description="They'll all stare.", price="1200", quantity_available="12", category="Beauty and Skincare", shop=shop3)
     boots = Product(name="boots", description="Thick soles perfect for hiking.", price="1500", quantity_available="13", category="Outdoor Gear", shop=shop1)
     rope = Product(name="rope", description="For your clothes, your patches and outdoor activites.", price="350", quantity_available="14", category="Outdoor Gear", shop=shop1)
     phone = Product(name="phone", description="Clear display with storage upto 1TB.", price="98000", quantity_available="15", category="Electronics", shop=shop1)
     laptop = Product(name="laptop", description="Running an M4 chip at speeds you never imagined.", price="40000", quantity_available="16", category="Electronics",shop=shop1)
-    medicine = Product(name="medicine", description="Drink your cold away.", price="900", quantity_available="17", category="Health and Wellness", shop=shop1)
-    bandage = Product(name="bandage", description="For the quick fix from the unfortunate accident.", price="1700", quantity_available="18", category="Health and Wellness", shop=shop1)
-    playstation = Product(name="playstation", description="Bring your imagination to life with immersive games and unlimited storage.", price="45000", quantity_available="19", category="Toys and Games", shop=shop1)
-    monopoly = Product(name="monopoly", description="Learn your finances while beating your friends.", price="1000", quantity_available="20", category="Toys and Games", shop=shop1)
+    medicine = Product(name="medicine", description="Drink your cold away.", price="900", quantity_available="17", category="Health and Wellness", shop=shop2)
+    bandage = Product(name="bandage", description="For the quick fix from the unfortunate accident.", price="1700", quantity_available="18", category="Health and Wellness", shop=shop2)
+    playstation = Product(name="playstation", description="Bring your imagination to life with immersive games and unlimited storage.", price="45000", quantity_available="19", category="Toys and Games", shop=shop3)
+    monopoly = Product(name="monopoly", description="Learn your finances while beating your friends.", price="1000", quantity_available="20", category="Toys and Games", shop=shop3)
     book  = Product(name="book", description="Time to upskill your software skills using well descrbed examples.", price="910", quantity_available="21", category="Books and Stationary", shop=shop1)
     potter = Product(name="potter", description="Follow Harry Potter through Hogwarts as he faces he who must not be mentioned.", price="1300", quantity_available="22", category="Books and Stationary", shop=shop1)
-    burgers = Product(name="burgers", description="You've worked so hard. Feel the cheese drip down your lips.", price="750", quantity_available="23", category="Food and Beverages", shop=shop1)
-    smoothie = Product(name="smoothie", description="Healthy drinks to get you through your day.", price="600", quantity_available="24", category="Food and Beverages", shop=shop1)
+    burgers = Product(name="burgers", description="You've worked so hard. Feel the cheese drip down your lips.", price="750", quantity_available="23", category="Food and Beverages", shop=shop2)
+    smoothie = Product(name="smoothie", description="Healthy drinks to get you through your day.", price="600", quantity_available="24", category="Food and Beverages", shop=shop2)
     products = [lamp, painting, tv, microwave, lawnmower, hammer, dress, shoe, watch, ring, lipstick, mascara, boots, rope, phone, laptop, medicine, bandage, playstation, monopoly, book, potter, burgers, smoothie]
     db.session.add_all(products)
     db.session.commit()
@@ -153,8 +191,8 @@ with app.app_context():
 
     print("Seeding order...")
     order_1 = Order(total_price=1000, status='pending', delivery_fee=100, buyer=mike, delivery_person=vic)
-    order_2 = Order(total_price=2000, status='pending', delivery_fee=350, buyer=mike, delivery_person=vic)
-    order_3 = Order(total_price=3000, status='pending', delivery_fee=700, buyer=mike, delivery_person=vic)
+    order_2 = Order(total_price=2000, status='pending', delivery_fee=350, buyer=michelle, delivery_person=sam)
+    order_3 = Order(total_price=3000, status='pending', delivery_fee=700, buyer=james, delivery_person=kevin)
     orderz = [order_1, order_2, order_3]
     db.session.add_all(orderz)
     db.session.commit()
@@ -164,6 +202,7 @@ with app.app_context():
     painting_order_1= OrderItem(quantity=2, order=order_1, product=painting)
     tv_order_1= OrderItem(quantity=3, order=order_2, product=tv)
     laptop_order_1= OrderItem(quantity=4, order=order_3, product=laptop)
-    orders = [lamp_order_1, painting_order_1, tv_order_1, laptop_order_1]
+    playstation_order= OrderItem(quantity=2, order=order_2, product=playstation)
+    orders = [lamp_order_1, painting_order_1, tv_order_1, laptop_order_1, playstation_order]
     db.session.add_all(orders)
     db.session.commit()
