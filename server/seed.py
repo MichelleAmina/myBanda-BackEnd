@@ -213,3 +213,6 @@ with app.app_context():
     like2 = LikedProduct(buyer=mike, product=painting)
     like3 = LikedProduct(buyer=mike, product=tv)
     like4 = LikedProduct(buyer=mike, product=laptop)
+    likes = [like1, like2, like3, like4]
+    db.session.add_all(likes)
+    db.session.commit()
