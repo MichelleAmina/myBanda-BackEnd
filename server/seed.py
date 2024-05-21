@@ -58,17 +58,23 @@ with app.app_context():
     shop1 = Shop(name="Shoe Store", 
                  description="Sells high quality shoes", 
                  logo_image_url="https://i.pinimg.com/564x/c2/09/69/c20969c7c0e5b5c6f0f74d64395dadd4.jpg", 
-                 banner_image_url="https://i.pinimg.com/564x/0d/8a/3a/0d8a3a79902c2460f0b163147293445c.jpg", 
+                 banner_image_url="https://i.pinimg.com/564x/0d/8a/3a/0d8a3a79902c2460f0b163147293445c.jpg",
+                 location="Nairobi",
+                 contact="0700000000",
                  seller=rob)
     shop2 = Shop(name="Electronic Store", 
                  description="Good electronics", 
                  logo_image_url="https://i.pinimg.com/564x/43/ae/10/43ae10daf5a34ca7409a1abccc189e94.jpg", 
-                 banner_image_url="https://i.pinimg.com/564x/33/11/5a/33115a1961b4b4415af899e8565b951e.jpg", 
+                 banner_image_url="https://i.pinimg.com/564x/33/11/5a/33115a1961b4b4415af899e8565b951e.jpg",
+                 location="Kisumu",
+                 contact="0700000001",
                  seller=ndanu)
     shop3 = Shop(name="foodies", 
                  description="sweet food", 
                  logo_image_url="https://i.pinimg.com/736x/c0/80/32/c08032a93c896fe253588ee9c0bb6f97.jpg", 
-                 banner_image_url="https://i.pinimg.com/736x/c7/31/23/c7312307e19b84d78f914da20dfef7b1.jpg", 
+                 banner_image_url="https://i.pinimg.com/736x/c7/31/23/c7312307e19b84d78f914da20dfef7b1.jpg",
+                 location="Nakuru",
+                 contact="0700000002",
                  seller=john)
     shops = [shop1, shop2, shop3]
     db.session.add_all(shops)
