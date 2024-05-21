@@ -172,6 +172,8 @@ class Orders(Resource):
             status = data.get('status')
             delivery_fee = data.get('delivery_fee')
             delivery_address = data.get('delivery_address')
+            contact = data.get('contact')
+            location = data.get('location')
 
             if None in [total_price, status, delivery_fee, delivery_address]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -179,7 +181,7 @@ class Orders(Resource):
             # Getting the current time
             created_at = datetime.now(timezone.utc)
 
-            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at)
+            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, location=location)
             db.session.add(order)
             db.session.commit()
 
