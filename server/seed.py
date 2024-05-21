@@ -21,9 +21,9 @@ with app.app_context():
     # sellers
     rob = User(username="robins", email="rob@gmail.com", location="Nairobi", contact="12345" ,role="seller")
     rob.password_hash = "seller"
-    ndanu = User(username="ndanu", email="ndanu@gmail.com", lacation="Kisumu", contact="12345", role="seller")
+    ndanu = User(username="ndanu", email="ndanu@gmail.com", location="Kisumu", contact="12345", role="seller")
     ndanu.password_hash = "seller2"
-    john = User(username="john", email="john@gmail.com", lacation="Nakuru", contact="12345", role="seller")
+    john = User(username="john", email="john@gmail.com", location="Nakuru", contact="12345", role="seller")
     john.password_hash = "seller3"
 
     # buyers
@@ -39,7 +39,7 @@ with app.app_context():
     vic.password_hash = "bolt"
     sam = User(username="boda", email="sam@gmail.com", location="Kisumu", contact="0700000005", role="delivery", is_banda_delivery=True)
     sam.password_hash = "bolt2"
-    kevin = User(username="boda", email="kevin@gmail.com", location="Nakuru", contact="0700000006", role="delivery", is_banda_delivery=True)
+    kevin = User(username="kevin", email="kevin@gmail.com", location="Nakuru", contact="0700000006", role="delivery", is_banda_delivery=True)
     kevin.password_hash = "bolt3"
 
     # admin
@@ -70,7 +70,8 @@ with app.app_context():
                  logo_image_url="https://i.pinimg.com/736x/c0/80/32/c08032a93c896fe253588ee9c0bb6f97.jpg", 
                  banner_image_url="https://i.pinimg.com/736x/c7/31/23/c7312307e19b84d78f914da20dfef7b1.jpg", 
                  seller=john)
-    db.session.add_all(shop1, shop2, shop3)
+    shops = [shop1, shop2, shop3]
+    db.session.add_all(shops)
     db.session.commit()
 
     print('Seeding products...')
