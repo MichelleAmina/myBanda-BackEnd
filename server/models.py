@@ -154,7 +154,7 @@ class LikedProduct(db.Model, SerializerMixin):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     product = db.relationship("Product", back_populates='likes')
 
-    serialize_rules = ('-buyer.liked_products', '-buyer.shop.seller', '-buyer.shop.products', '-buyer.shop.followers','-buyer.my_orders', '-buyer.my_deliveries', '-buyer.reviews_given', '-buyer.reviews_received', '-product.likes', '-product.shop', '-product.reviews', '-product.items')
+    serialize_rules = ('-buyer.liked_products', '-buyer.shop','-buyer.my_orders', '-buyer.my_deliveries', '-buyer.reviews_given', '-buyer.reviews_received', '-product.likes', '-product.shop.seller', '-product.reviews', '-product.items')
 
     def __repr__(self):
         return f'<LikedProduct {self.id}>'
