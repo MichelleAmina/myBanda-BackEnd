@@ -144,6 +144,8 @@ class Order(db.Model, SerializerMixin):
     status = db.Column(db.String, nullable=False)  #'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
     delivery_address = db.Column(db.String)
+    contact = db.Column(db.String(100))
+    location = db.Column(db.String(100))
     
     buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     buyer = db.relationship('User', back_populates='my_orders', foreign_keys=[buyers_id], lazy='joined')
