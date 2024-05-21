@@ -5,6 +5,7 @@ import datetime
 
 with app.app_context():
     print('Clearing database...')
+    LikedProduct.query.delete()
     OrderItem.query.delete()
     Order.query.delete()
     Review.query.delete()
