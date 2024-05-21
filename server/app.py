@@ -190,6 +190,19 @@ class Orders(Resource):
             db.session.rollback()
             return {"message": str(e)}, 500
         
+     
+     
+class OrdersById(Resource):
+    @jwt_required()
+    def get(self, order_id):
+        try:
+            order = Order.query.filter_by(id=order_id).first()
+            if not order:
+                return {"message": "Order not found"}, 404
+            return order.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500  
+        
         
     @jwt_required()
     def patch(self, order_id):
@@ -215,8 +228,6 @@ class Orders(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': str(e)}, 500
-        
-        
         
 
 
@@ -433,6 +444,7 @@ api.add_resource(OrderItems, '/orderitems')
 api.add_resource(Reviews, '/review')
 api.add_resource(ProductsById, '/products/<int:id>')
 api.add_resource(OrderDetail, '/orders/<int:order_id>')
+api.add_resource(OrdersById, '/order/<int:order_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
