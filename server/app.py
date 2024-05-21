@@ -1,4 +1,4 @@
-from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction
+from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
 # from seed import seed_database
 from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for
 import json
@@ -479,6 +479,45 @@ class Transactions(Resource):
             200
             )
 
+class LikedProducts(Resource):
+    def get(self):
+
+        liked = [liked.to_dict() for liked in LikedProduct.query.all()]
+
+        if not liked:
+            return {"message": "No liked products"}, 404
+        
+        return make_response(
+            liked,
+            200
+        )
+    
+    def post(self):
+        data = request.get_json()
+
+        product_id = data.product_id
+        buyers_id = data.buyers_id
+
+        if None in [buyers_id, product_id]:
+                return {'message': 'Required field(s) missing'}, 400
+        
+        # Checking if the product exists
+        product = Product.query.get(product_id)
+        if not product:
+            return {'message': 'Product does not exist'}, 404
+        
+        buyer = Product.query.get(buyers_id)
+        if not buyer:
+            return {'message': 'Buyer does not exist'}, 404
+        
+        like = LikedProduct(product_id=product_id, buyers_id=buyers_id)
+        db.session.add(like)
+        db.session.commit()
+
+        return make_response(buyer.to_dict, 200)
+        
+
+
 # class ResetPassword(Resource):
 #     # def post(self):
 #     #     data = request.get_json()
@@ -556,6 +595,7 @@ api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
 api.add_resource(Reviews, '/review')
+api.add_resource(LikedProducts, '/like')
 # api.add_resource(OrderDetail, '/orders/<int:order_id>')
 # api.add_resource(ResetPassword, '/reset-password')
 # api.add_resource(ReciveToken, '/reset-password/<token>')

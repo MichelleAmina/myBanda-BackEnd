@@ -1,4 +1,4 @@
-from models import User, Shop, Product, Order, OrderItem, Review, ProductsImages
+from models import User, Shop, Product, Order, OrderItem, Review, ProductsImages, LikedProduct
 from config import app, db
 import datetime
 
@@ -207,3 +207,9 @@ with app.app_context():
     orders = [lamp_order_1, painting_order_1, tv_order_1, laptop_order_1, playstation_order]
     db.session.add_all(orders)
     db.session.commit()
+
+    print("Liking products...")
+    like1 = LikedProduct(buyer=mike, product=lamp)
+    like2 = LikedProduct(buyer=mike, product=painting)
+    like3 = LikedProduct(buyer=mike, product=tv)
+    like4 = LikedProduct(buyer=mike, product=laptop)
