@@ -145,7 +145,9 @@ class Order(db.Model, SerializerMixin):
     delivery_fee = db.Column(db.String)
     delivery_address = db.Column(db.String)
     contact = db.Column(db.String(100))
-    location = db.Column(db.String(100))
+    name = db.Column(db.String(100))
+    country = db.Column(db.String(100))
+    city = db.Column(db.String(100))
     
     buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     buyer = db.relationship('User', back_populates='my_orders', foreign_keys=[buyers_id], lazy='joined')
