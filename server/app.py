@@ -2,6 +2,10 @@ from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
 from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mail, Message, url_for
 import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 
 
 
@@ -374,57 +378,114 @@ class ProductsById(Resource):
             return {"message": str(e)}, 500
 
 
-class ResetPassword(Resource):
-    # def post(self):
-    #     data = request.get_json()
-    #     email = data.get('email')
-        
-    #     if not email:
-    #         return {'message': 'Please input your email address'}, 400
-        
-    #     user = User.query.filter_by(email=email).first()
-    #     if user:
-    #         send_mail(user)
-    #     return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
-    pass
 
-def send_mail(user):
-    token = user.get_token()
-    msg = Message('Password Reset Request', recipients=[user.email], sender='noreply@example.com')
-    msg.body = f'''To reset your password, visit the following link:
-    {url_for('recivetoken', token=token, _external=True)}
+
+class ResetPassword(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            
+            if not email:
+                return {'message': 'Please input your email address'}, 400
+            
+            user = User.query.filter_by(email=email).first()
+            if user:
+                token = user.get_token()
+                send_reset_password_email(email, token)
+            return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+def send_reset_password_email(email, token):
+    # Email configuration
+    sender_email = 'willy@gmail.com'
+    sender_password = 'hjvbashf'
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587  
+
+    # Create message container
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = email
+    msg['Subject'] = 'Password Reset Request'
+
+    # Email body
+    body = f'''To reset your password, visit the following link:
+    http://127.0.0.1:5555/change-password?token={token}
     If you did not make this request then simply ignore this email and no changes will be made.
     '''
-    
-    print(f'Test token for {user.email}: {token}')
-    mail.send(msg)
+    msg.attach(MIMEText(body, 'plain'))
 
+    # Establish a connection with the SMTP server
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.starttls()  # Upgrade the connection to a secure one using TLS
+    server.login(sender_email, sender_password)
 
+    # Send the email
+    server.send_message(msg)
+
+    # Close the connection
+    server.quit()
 
 
 class ReciveToken(Resource):
-    # def get(self, token):
-    #     user = User.verify_token(token)
-    #     if not user:
-    #         return {"message": "Invalid token"}, 401
-    #     return {"message": "Token is valid"}, 200
-    pass
-
+    def get(self, token):
+        user = User.verify_token(token)
+        if not user:
+            return {"message": "Invalid token"}, 401
+        return {"message": "Token is valid"}, 200
 
 class ChangePassword(Resource):
-    # def post(self):
-    #     data = request.get_json()
-    #     token = data.get('token')
-    #     new_password = data.get('password')
-        
-    #     user = User.verify_token(token)
-    #     if not user:
-    #         return {"message": "Invalid token"}, 401
+    def post(self):
+        try:
+            data = request.get_json()
+            new_password = data.get('new_password')  
 
-    #     user.password_hash = new_password
-    #     db.session.commit()
-    #     return {"message": "Password has been reset successfully"}, 200
-    pass
+            token = request.args.get('token')  # Extract token from query parameter
+            if not token or not new_password:
+                return {'message': 'Token and new password are required'}, 400
+
+            user = User.verify_token(token)
+            if not user:
+                return {'message': 'Invalid token'}, 401
+
+            # If the token is valid, proceed with changing the password
+            user.password_hash = new_password
+            db.session.commit()
+
+            return {'message': 'Password has been changed successfully'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+
+# class ChangePassword(Resource):
+#     def post(self):
+#         try:
+#             data = request.get_json()
+#             new_password = data.get('new_password')  
+
+#             token = request.args.get('token')  
+#             print('token ndio hii: ', token)
+            
+#             if not token or not new_password:
+#                 return {'message': 'Token and new password are required'}, 400
+
+#             return change_password(token, new_password)
+#         except Exception as e:
+#             return {'message': str(e)}, 500
+
+# def change_password(token, new_password):
+#     user = User.verify_token(token)
+#     if not user:
+#         return {"message": "Invalid token"}, 401
+
+#     user.password_hash = new_password
+#     db.session.commit()
+#     return {"message": "Password has been changed successfully"}, 200
+
 
      
 

@@ -21,8 +21,8 @@ from dotenv import load_dotenv
 load_dotenv()  
 
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get('DATABASE_URI')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'hbb36bh6kby45][mg]'
 app.config['JWT_SECRET_KEY'] = b'\x9d~\xaejx\xfe\xc5\xa1\xf6\xaa\x31\xdb\xb0k\xf7\x9d'
@@ -30,11 +30,14 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=72)
 app.config['JWT_COOKIE_SECURE'] = False
 app.config['SESSION_TYPE'] = 'filesystem' 
 app.json.compact = False
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 2525
+app.config['MAIL_USERNAME'] = '55202118fd1a22'
+app.config['MAIL_PASSWORD'] = '428503172768de'
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'youremail@gmail.com'
-app.config['MAIL_PASSWORD'] = 'password*123'
+app.config['MAIL_USE_SSL'] = False
+
+
 
 
 metadata = MetaData(naming_convention={

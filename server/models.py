@@ -26,14 +26,33 @@ class User(db.Model, SerializerMixin):
         return token
 
 
+    # @staticmethod
+    # def verify_token(token):
+    #     s = Serializer(app.config['JWT_SECRET_KEY'])
+    #     try:
+    #         user_id = s.loads(token)['user_id']
+    #     except:
+    #         return None
+    #     return User.query.get(user_id)
+    
+    
     @staticmethod
     def verify_token(token):
-        s = Serializer(app.config['JWT_SECRET_KEY'])
         try:
-            user_id = s.loads(token)['user_id']
-        except:
+            s = Serializer(app.config['SECRET_KEY'])
+            decoded_token = s.loads(token)
+            app.logger.info("Decoded token payload: %s", decoded_token)  # Log decoded token payload
+            user_id = decoded_token.get('user_id')
+            if user_id is None:
+                raise Exception("User ID not found in token")
+            user = User.query.get(user_id)
+            if user is None:
+                raise Exception("User not found")
+            return user
+        except Exception as e:
+            app.logger.error("Token verification failed: %s", str(e))  # Log error message
             return None
-        return User.query.get(user_id)
+    
 
     def __repr__(self):
         return f'<User {self.email} of role {self.role}>'
