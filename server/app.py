@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mail, Message, url_for
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mail, Message, url_for, sender_email, sender_password
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -146,7 +146,7 @@ class Shops(Resource):
 
 
 class Orders(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         try:
             user_id = session.get('user_id')
@@ -161,7 +161,7 @@ class Orders(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    @jwt_required()
+    # @jwt_required()
     def post(self):
         try:
             user_id = session.get('user_id')
@@ -200,7 +200,7 @@ class Orders(Resource):
      
      
 class OrdersById(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self, order_id):
         try:
             order = Order.query.filter_by(id=order_id).first()
@@ -211,7 +211,7 @@ class OrdersById(Resource):
             return {"message": str(e)}, 500  
         
         
-    @jwt_required()
+    # @jwt_required()
     def patch(self, order_id):
         try:
             user_id = session.get('user_id')
@@ -400,8 +400,6 @@ class ResetPassword(Resource):
 
 def send_reset_password_email(email, token):
     # Email configuration
-    sender_email = 'willy@gmail.com'
-    sender_password = 'hjvbashf'
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587  
 

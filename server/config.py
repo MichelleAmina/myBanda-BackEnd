@@ -37,7 +37,8 @@ app.config['MAIL_PASSWORD'] = '428503172768de'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
-
+sender_email = os.environ.get('EMAIL')
+sender_password = os.environ.get('PASSWORD')
 
 
 metadata = MetaData(naming_convention={
