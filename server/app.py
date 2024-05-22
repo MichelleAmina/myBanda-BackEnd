@@ -240,7 +240,7 @@ class OrdersById(Resource):
 
 
 class OrderItems(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         try:
             order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
@@ -251,7 +251,7 @@ class OrderItems(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    @jwt_required()
+    # @jwt_required()
     def post(self):
         try:
             user_id = session.get('user_id')
