@@ -251,7 +251,8 @@ class OrderItems(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    # @jwt_required()
+    # @jwt_required()    # @jwt_required()
+
     def post(self):
         try:
             user_id = session.get('user_id')
@@ -339,7 +340,7 @@ class Reviews(Resource):
 
 
 class OrderDetail(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self, order_id):
         try:
             user_id = session.get('user_id')
