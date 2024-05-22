@@ -1,10 +1,11 @@
-from models import User, Shop, Product, Order, OrderItem, Review, ProductsImages, LikedProduct
+from models import User, Shop, Product, Order, OrderItem, Review, ProductsImages, LikedProduct, Transaction
 from config import app, db
 import datetime
 
 
 with app.app_context():
     print('Clearing database...')
+    Transaction.query.delete()
     LikedProduct.query.delete()
     OrderItem.query.delete()
     Order.query.delete()

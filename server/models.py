@@ -223,7 +223,7 @@ class Review(db.Model, SerializerMixin):
         return f'<Review by {self.buyer_id} for {self.seller_id}\'s product {self.product_id}>'
     
     
-class Transaction(db.Model):
+class Transaction(db.Model, SerializerMixin):
     __tablename__ = 'transaction'
 
     id = db.Column(db.Integer, primary_key=True)
