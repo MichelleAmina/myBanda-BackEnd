@@ -146,12 +146,12 @@ class Shops(Resource):
 
 
 class Orders(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
         try:
-            # user_id = session.get('user_id')
-            # if not user_id:
-            #     return {'message': 'User not logged in'}, 401
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
             orders = [order.to_dict() for order in Order.query.all()]
             if not orders:
@@ -161,12 +161,12 @@ class Orders(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
-            # user_id = session.get('user_id')
-            # if not user_id:
-            #     return {'message': 'User not logged in'}, 401
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
             data = request.get_json()
             if not data:
@@ -200,7 +200,7 @@ class Orders(Resource):
      
      
 class OrdersById(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self, order_id):
         try:
             order = Order.query.filter_by(id=order_id).first()
@@ -211,12 +211,12 @@ class OrdersById(Resource):
             return {"message": str(e)}, 500  
         
         
-    # @jwt_required()
+    @jwt_required()
     def patch(self, order_id):
         try:
-            # user_id = session.get('user_id')
-            # if not user_id:
-            #     return {'message': 'User not logged in'}, 401
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
             data = request.get_json()
             new_status = data.get('status')
@@ -240,7 +240,7 @@ class OrdersById(Resource):
 
 
 class OrderItems(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
         try:
             order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
@@ -251,13 +251,12 @@ class OrderItems(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    # @jwt_required()    # @jwt_required()
-
+    @jwt_required()    
     def post(self):
         try:
-            # user_id = session.get('user_id')
-            # if not user_id:
-            #     return {'message': 'User not logged in'}, 401
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
             
             data = request.get_json()
             if not data:
@@ -340,7 +339,7 @@ class Reviews(Resource):
 
 
 class OrderDetail(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self, order_id):
         try:
             user_id = session.get('user_id')
