@@ -516,7 +516,7 @@ class LikedProducts(Resource):
     def delete(self):
         like_id = request.get_json()['id']
 
-        liked = LikedProduct.query.get(like_id)
+        liked = LikedProduct.query.filter(LikedProduct.id == like_id).first()
         db.session.delete(liked)
         db.session.commit()
 
