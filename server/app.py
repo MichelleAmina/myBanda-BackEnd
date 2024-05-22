@@ -104,9 +104,10 @@ class Products(Resource):
         quantity_available = data.get('quantity_available')
         category = data.get('category')
         shop_id = data.get('shop_id')
+        tag = data.get('get')
 
 
-        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
+        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id, tag=tag) 
         db.session.add(product)
         db.session.commit()
         image = ProductsImages(image_url=image_url, product=product)
