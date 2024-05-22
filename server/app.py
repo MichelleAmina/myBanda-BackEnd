@@ -425,7 +425,6 @@ class STK(Resource):
             db.session.add(transaction)
             db.session.commit()
 
-        print(json_data)
         return message,200
     
 class Paybill(Resource):
