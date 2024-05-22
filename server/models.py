@@ -143,6 +143,7 @@ class Product(db.Model, SerializerMixin):
     quantity_available = db.Column(db.Integer, nullable=False)
     category = db.Column(db.String, nullable=False)
     shop_id = db.Column(db.Integer, db.ForeignKey('shop.id'), nullable=False)
+    tag = db.Column(db.String) #hot, popular, new
 
     # Relationships
     shop = db.relationship('Shop', back_populates='products')
