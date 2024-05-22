@@ -380,7 +380,6 @@ class ProductsById(Resource):
 
 
 
-
 class ResetPassword(Resource):
     def post(self):
         try:
@@ -392,42 +391,32 @@ class ResetPassword(Resource):
             
             user = User.query.filter_by(email=email).first()
             if user:
-                token = user.get_token()
+                token = user.generate_token()
                 send_reset_password_email(email, token)
             return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
 
-
 def send_reset_password_email(email, token):
-    # Email configuration
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587  
 
-    # Create message container
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = email
     msg['Subject'] = 'Password Reset Request'
 
-    # Email body
     body = f'''To reset your password, visit the following link:
     http://127.0.0.1:5555/change-password?token={token}
     If you did not make this request then simply ignore this email and no changes will be made.
     '''
     msg.attach(MIMEText(body, 'plain'))
 
-    # Establish a connection with the SMTP server
     server = smtplib.SMTP(smtp_server, smtp_port)
-    server.starttls()  # Upgrade the connection to a secure one using TLS
+    server.starttls()
     server.login(sender_email, sender_password)
-
-    # Send the email
     server.send_message(msg)
-
-    # Close the connection
     server.quit()
-
 
 class ReciveToken(Resource):
     def get(self, token):
@@ -441,8 +430,8 @@ class ChangePassword(Resource):
         try:
             data = request.get_json()
             new_password = data.get('new_password')  
-
             token = request.args.get('token')  # Extract token from query parameter
+
             if not token or not new_password:
                 return {'message': 'Token and new password are required'}, 400
 
@@ -450,14 +439,12 @@ class ChangePassword(Resource):
             if not user:
                 return {'message': 'Invalid token'}, 401
 
-            # If the token is valid, proceed with changing the password
             user.password_hash = new_password
             db.session.commit()
 
             return {'message': 'Password has been changed successfully'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
-
 
 
 # class ChangePassword(Resource):
