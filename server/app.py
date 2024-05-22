@@ -513,6 +513,14 @@ class LikedProducts(Resource):
 
         return make_response(buyer.to_dict, 200)
         
+    def delete(self):
+        like_id = request.get_json()['id']
+
+        liked = LikedProduct.query.get(like_id)
+        db.session.delete(liked)
+        db.session.commit()
+
+        return {'message': 'Succesfully deleted'}, 204
 
 
 # class ResetPassword(Resource):
