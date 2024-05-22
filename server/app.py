@@ -118,7 +118,7 @@ class Products(Resource):
 
         return make_response(
             product.to_dict(),
-            200
+            201
         )
     
 class Images(Resource):
@@ -197,6 +197,11 @@ class Shops(Resource):
 class OrderIndex(Resource):
     def get(self, id):
 
+        # user_id = session.get('user_id')
+        # order = Order.query.filter_by(id=id, user_id=user_id).first()
+        # if not order:
+        #     return {"message": "Order not found"}, 404
+
         order = Order.query.filter(Order.id == id).first()
 
         return make_response(
@@ -204,18 +209,30 @@ class OrderIndex(Resource):
             200
         )
     
-# class OrderDetail(Resource):
-#     @jwt_required()
-#     def get(self, order_id):
-#         try:
-#             user_id = session.get('user_id')
-#             order = Order.query.filter_by(id=order_id, user_id=user_id).first()
-#             if not order:
-#                 return {"message": "Order not found"}, 404
+    # @jwt_required()
+    def patch(self, order_id):
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
 
-#             return order.to_dict(), 200
-#         except Exception as e:
-#             return {"message": str(e)}, 500
+            data = request.get_json()
+            new_status = data.get('status')
+
+            if not new_status:
+                return {'message': 'New status not provided'}, 400
+
+            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
+            if not order:
+                return {'message': 'Order not found'}, 404
+
+            order.status = new_status
+            db.session.commit()
+
+            return make_response(order.to_dict(), 200)
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
 
 class Orders(Resource):
     # @jwt_required()
@@ -253,6 +270,11 @@ class Orders(Resource):
             status = data.get('status')
             delivery_fee = data.get('delivery_fee')
             delivery_address = data.get('delivery_address')
+            contact = data.get('contact')
+            name = data.get('name')
+            country = data.get('country')
+            city = data.get('city')
+            delivery_persons = data.get('delivery_persons')
 
             if None in [total_price, status, delivery_fee, delivery_address]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -260,39 +282,14 @@ class Orders(Resource):
             # Getting the current time
             created_at = datetime.now(timezone.utc)
 
-            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at)
+            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
             db.session.add(order)
             db.session.commit()
-
             return make_response(order.to_dict(), 201)
+        
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-        
-    # @jwt_required()
-    def patch(self, order_id):
-        try:
-            user_id = session.get('user_id')
-            if not user_id:
-                return {'message': 'User not logged in'}, 401
-
-            data = request.get_json()
-            new_status = data.get('status')
-
-            if not new_status:
-                return {'message': 'New status not provided'}, 400
-
-            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
-            if not order:
-                return {'message': 'Order not found'}, 404
-
-            order.status = new_status
-            db.session.commit()
-
-            return make_response(order.to_dict(), 200)
-        except Exception as e:
-            db.session.rollback()
-            return {'message': str(e)}, 500
 
 
 class OrderItems(Resource):
@@ -605,4 +602,5 @@ api.add_resource(LikedProducts, '/like')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
 

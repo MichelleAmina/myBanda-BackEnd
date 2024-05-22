@@ -22,9 +22,9 @@ from dotenv import load_dotenv
 load_dotenv()  
 
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get('DATABASE_URI')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://banda_db2_user:8EGlg1MH9V6T2x6WJBQhALp5CY6VvSLA@dpg-cp461r0cmk4c73eerik0-a.frankfurt-postgres.render.com/banda_db2'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://banda_db2_user:8EGlg1MH9V6T2x6WJBQhALp5CY6VvSLA@dpg-cp461r0cmk4c73eerik0-a.frankfurt-postgres.render.com/banda_db2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = b'\x9d~\xaejx\xfe\xc5\xa1\xf6\xaa\x31\xdb\xb0k\xf7\x9d'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=72)
