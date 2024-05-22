@@ -228,8 +228,8 @@ class Transaction(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     MpesaReceiptNumber = db.Column(db.String)
-    Amount = db.Column(db.Integer)
-    TransactionDate = db.Column(db.Integer)
-    PhoneNumber = db.Column(db.Integer)
+    Amount = db.Column(db.String)
+    TransactionDate = db.Column(db.String)
+    PhoneNumber = db.Column(db.String)
 
 
