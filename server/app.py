@@ -431,7 +431,7 @@ class STK(Resource):
         "amount": amount,
         "phone_number": number,
         "reference_code": "Banda",
-        "callback_url": "https://mybanda-backend-88l2.onrender.com/stk",
+        "callback_url": https://mybanda-backend-88l2.onrender.com/stk,
         "description": "Reverse afterwards"
         }
         resp = mpesa_api.MpesaExpress.stk_push(**data)
