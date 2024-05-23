@@ -27,6 +27,10 @@ flask-session = "*"
 flask-mpesa = "*"
 requests = "*"
 flask-mail = "*"
+itsdangerous = "*"
+py3-validate-email = "*"
+validate-email = "*"
+email-validator = "*"
 
 [dev-packages]
 
