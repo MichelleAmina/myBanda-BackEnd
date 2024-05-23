@@ -41,7 +41,7 @@ class Login(Resource):
             
             session['user_id'] = user.id
             access_token = create_access_token(identity=user.id)
-            return {'message': 'Login successful', 'access_token': access_token}, 200
+            return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
         except Exception as e:
             return {'message': str(e)}, 500
         
