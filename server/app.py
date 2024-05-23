@@ -490,10 +490,14 @@ class LikedProducts(Resource):
         )
     
     def post(self):
+
         data = request.get_json()
 
-        product_id = data.product_id
-        buyers_id = data.buyers_id
+        product_id = data["product_id"]
+        buyers_id = session['user_id']
+
+        if not buyers_id:
+            buyers_id = 108
 
         if None in [buyers_id, product_id]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -503,15 +507,16 @@ class LikedProducts(Resource):
         if not product:
             return {'message': 'Product does not exist'}, 404
         
-        buyer = Product.query.get(buyers_id)
+        buyer = User.query.get(buyers_id)
         if not buyer:
             return {'message': 'Buyer does not exist'}, 404
         
-        like = LikedProduct(product_id=product_id, buyers_id=buyers_id)
+        like = LikedProduct(product=product, buyer=buyer)
         db.session.add(like)
         db.session.commit()
 
-        return make_response(buyer.to_dict, 200)
+        return make_response(like.to_dict(), 200)
+        # return {'success': 'Liked'}, 201
         
     def delete(self):
         like_id = request.get_json()['id']

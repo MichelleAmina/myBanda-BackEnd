@@ -113,7 +113,7 @@ class Product(db.Model, SerializerMixin):
     images = db.relationship('ProductsImages', back_populates='product', lazy='select', cascade="all, delete-orphan")
     reviews = db.relationship('Review', back_populates='product', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product', '-likes.product')
+    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product', '-likes.product', 'reviews.buyer.liked_products')
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
