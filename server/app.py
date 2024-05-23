@@ -494,10 +494,10 @@ class LikedProducts(Resource):
         data = request.get_json()
 
         product_id = data["product_id"]
-        buyers_id = session['user_id']
+        # buyers_id = session['user_id']
 
-        if not buyers_id:
-            buyers_id = 108
+
+        buyers_id = 108
 
         if None in [buyers_id, product_id]:
                 return {'message': 'Required field(s) missing'}, 400
