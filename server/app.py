@@ -449,10 +449,10 @@ class STK(Resource):
         if result_code == 0:
             amt = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][0]["Value"]
             code = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][1]["Value"]
-            date = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][2]["Value"]
+            # date = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][2]["Value"]  TransactionDate=date, 
             num = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][3]["Value"]
 
-            transaction = Transaction(Amount=amt, MpesaReceiptNumber=code, TransactionDate=date, PhoneNumber=num)
+            transaction = Transaction(Amount=amt, MpesaReceiptNumber=code,PhoneNumber=num)
             db.session.add(transaction)
             db.session.commit()
 
