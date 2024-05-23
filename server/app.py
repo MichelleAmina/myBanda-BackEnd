@@ -444,11 +444,15 @@ class Reviews(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
+        
+class Prompt(Resource):
+    def post(self):
+        data = request.get_json()
 
-class STK(Resource):
-    def get(self):
-        number = "254700622570"
-        amount = '2'
+        number = data['contact']
+        amount = data['amount']
+        # number = "254700622570"
+        # amount = '2'
 
         data = {
         "business_shortcode": "174379",
@@ -461,7 +465,8 @@ class STK(Resource):
         }
         resp = mpesa_api.MpesaExpress.stk_push(**data)
         return resp,200
-    
+
+class STK(Resource):
     def post(self):
         json_data = request.get_json()
         result_code = json_data["Body"]["stkCallback"]["ResultCode"]
@@ -681,6 +686,7 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
+api.add_resource(Prompt, '/prompt')
 
 
 
