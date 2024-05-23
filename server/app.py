@@ -2,6 +2,11 @@ from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem
 # from seed import seed_database
 from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
 import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email_validator import validate_email, EmailNotValidError
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 class SignUp(Resource):
     def post(self):
@@ -13,6 +18,13 @@ class SignUp(Resource):
             location = data.get('location')
             contact = data.get('contact')
             role = data.get('role')
+
+            # Validating the email format
+            try:
+                valid = validate_email(email)
+                email = valid.email  
+            except EmailNotValidError as e:
+                return {'message': str(e)}, 400 
 
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
@@ -39,7 +51,7 @@ class Login(Resource):
             if not user or not user.authenticate(password):
                 return {'message': 'Invalid email or password'}, 401
             
-            session['user_id'] = user.id
+            # session['user_id'] = user.id
             access_token = create_access_token(identity=user.id)
             return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
         except Exception as e:
@@ -76,7 +88,7 @@ class DeleteUser(Resource):
     @jwt_required()
     def delete(self, user_id):
         try:
-            current_user_id = session.get('user_id')
+            current_user_id = get_jwt_identity()
             current_user = User.query.get(current_user_id)
             
             if not current_user or current_user.role != 'banda_admin':
@@ -104,26 +116,43 @@ class DeleteUser(Resource):
 
 class ProductIndex(Resource):
     def get(self, id):
+        try:
+            product = Product.query.filter_by(id=id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
+            return product.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+    
+    def patch(self, id):
+        try:
+            data = request.get_json()
+            product = Product.query.filter_by(id=id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
 
-        product = Product.query.filter(Product.id == id).first()
+            for key, value in data.items():
+                setattr(product, key, value)
+            db.session.commit()
 
-        return make_response(
-            product.to_dict(),
-            200
-        )
+            return product.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
 
 class Products(Resource):
     def get(self):
-        
-        products = [product.to_dict() for product in Product.query.all()]
+        try:
+            products = [product.to_dict() for product in Product.query.all()]
 
-        if not products:
-            return {"message":"Add products!"}, 404
+            if not products:
+                return {"message": "Add products!"}, 404
 
-        return make_response(
-            products,
-            200
-        )
+            return make_response(
+                products,
+                200
+            )
+        except Exception as e:
+            return {"message": str(e)}, 500
     
     def post(self):
         data = request.get_json()
@@ -144,7 +173,6 @@ class Products(Resource):
         db.session.add(image)
         db.session.commit()
 
-        response = "Added succesfully"
         # product.image_url = json.loads(product.image_url)
 
         return make_response(
@@ -226,21 +254,18 @@ class Shops(Resource):
             return {"message": str(e)}, 500
     
 class OrderIndex(Resource):
-    def get(self, id):
-
-        # user_id = session.get('user_id')
-        # order = Order.query.filter_by(id=id, user_id=user_id).first()
-        # if not order:
-        #     return {"message": "Order not found"}, 404
-
-        order = Order.query.filter(Order.id == id).first()
-
-        return make_response(
-            order.to_dict(),
-            200
-        )
+    @jwt_required()
+    def get(self, order_id):
+        try:
+            order = Order.query.filter_by(id=order_id).first()
+            if not order:
+                return {"message": "Order not found"}, 404
+            return order.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500  
+        
     
-    # @jwt_required()
+    @jwt_required()
     def patch(self, order_id):
         try:
             user_id = session.get('user_id')
@@ -266,13 +291,13 @@ class OrderIndex(Resource):
             return {'message': str(e)}, 500
 
 class Orders(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
         try:
-            # user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             
-            # if not user_id:
-            #     return {'message': 'User not logged in'}, 401
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
             
             orders = [order.to_dict() for order in Order.query.all()]
             if not orders:
@@ -286,7 +311,7 @@ class Orders(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
             user_id = session.get('user_id')
@@ -324,7 +349,7 @@ class Orders(Resource):
 
 
 class OrderItems(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self):
         try:
             order_items = [order_item.to_dict() for order_item in OrderItem.query.all()]
@@ -335,7 +360,7 @@ class OrderItems(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
     
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
             user_id = session.get('user_id')
@@ -374,7 +399,7 @@ class OrderItems(Resource):
         
 
 class Reviews(Resource):
-#     @jwt_required()
+    @jwt_required()
     def get(self):
         try:
             reviews = [review.to_dict() for review in Review.query.all()]
@@ -385,7 +410,7 @@ class Reviews(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
     
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
             user_id = session.get('user_id')
@@ -573,8 +598,6 @@ class ResetPassword(Resource):
             return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
-
-
 
 def send_reset_password_email(email, token):
     smtp_server = 'smtp.gmail.com'

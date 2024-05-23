@@ -1,5 +1,6 @@
-from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta, Serializer, app
+from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta, Serializer, app, SECRET_KEY
 from itsdangerous import URLSafeSerializer
+import jwt
 
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -8,7 +9,7 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
-    role = db.Column(db.String, nullable=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+    role = db.Column(db.String, nullable=False, default=False)   # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
 
     # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)
@@ -45,27 +46,28 @@ class User(db.Model, SerializerMixin):
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
     
-    ## Getting the token for reset password route
-    # def get_token(self):
-    #     s = Serializer(app.config['SECRET_KEY'], expires_in=1800)
-    #     return s.dumps({'user_id': str(self.id)}).decode('utf-8')
-    
-    def get_token(self):
-        s = Serializer(app.config['SECRET_KEY'], salt='reset-password')
-        expiration_time = datetime.utcnow() + timedelta(seconds=1800)  # 1800 seconds = 30 minutes
-        token_data = {'user_id': self.id, 'exp': expiration_time.isoformat()}
-        token = s.dumps(token_data)
-        return token
-
+    def generate_token(self, expires_in=1800):
+            exp = datetime.utcnow() + timedelta(seconds=expires_in)
+            payload = {
+                'user_id': self.id,
+                'exp': exp
+            }
+            token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+            return token
 
     @staticmethod
     def verify_token(token):
-        s = Serializer(app.config['JWT_SECRET_KEY'])
         try:
-            user_id = s.loads(token)['user_id']
-        except:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            user_id = payload.get('user_id')
+            if not user_id:
+                raise jwt.InvalidTokenError("User ID not found in token")
+            return User.query.get(user_id)
+        except jwt.ExpiredSignatureError:
             return None
-        return User.query.get(user_id)
+        except jwt.InvalidTokenError:
+            return None
+
 
     def __repr__(self):
         return f'<User {self.email} of role {self.role}>'
@@ -148,7 +150,7 @@ class OrderItem(db.Model, SerializerMixin):
 class Order(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String, nullable=False)  #'pending', 'assigned', 'dispatched', 'delivered'
+    status = db.Column(db.String, nullable=False, default="pending")  #'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
     delivery_address = db.Column(db.String)
     contact = db.Column(db.String(100))
