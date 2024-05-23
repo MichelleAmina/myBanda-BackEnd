@@ -47,9 +47,11 @@ class Login(Resource):
             
             session['user_id'] = user.id
             access_token = create_access_token(identity=user.id)
-            return {'message': 'Login successful', 'access_token': access_token}, 200
+            return {'message': 'Login successful', 'access_token': access_token, 'role' : user.role}, 200
         except Exception as e:
             return {'message': str(e)}, 500
+        
+        ##### add role to return of login
 
 
 class Products(Resource):
@@ -444,34 +446,6 @@ class ChangePassword(Resource):
             return {'message': 'Password has been changed successfully'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
-
-
-# class ChangePassword(Resource):
-#     def post(self):
-#         try:
-#             data = request.get_json()
-#             new_password = data.get('new_password')  
-
-#             token = request.args.get('token')  
-#             print('token ndio hii: ', token)
-            
-#             if not token or not new_password:
-#                 return {'message': 'Token and new password are required'}, 400
-
-#             return change_password(token, new_password)
-#         except Exception as e:
-#             return {'message': str(e)}, 500
-
-# def change_password(token, new_password):
-#     user = User.verify_token(token)
-#     if not user:
-#         return {"message": "Invalid token"}, 401
-
-#     user.password_hash = new_password
-#     db.session.commit()
-#     return {"message": "Password has been changed successfully"}, 200
-
-
      
 
 class Hello(Resource):

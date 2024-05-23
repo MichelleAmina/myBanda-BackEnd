@@ -15,44 +15,7 @@ class User(db.Model, SerializerMixin):
 
 
     ## Getting the token for reset password route
-    # def get_token(self):
-    #     s = Serializer(app.config['SECRET_KEY'], salt='reset-password')
-    #     expiration_time = datetime.utcnow() + timedelta(seconds=1800)  # 1800 seconds = 30 minutes
-    #     token_data = {'user_id': self.id, 'exp': expiration_time.isoformat()}
-    #     token = s.dumps(token_data)
-    #     return token
 
-
-    # @staticmethod
-    # def verify_token(token):
-    #     s = Serializer(app.config['JWT_SECRET_KEY'])
-    #     try:
-    #         user_id = s.loads(token)['user_id']
-    #     except:
-    #         return None
-    #     return User.query.get(user_id)
-    
-    
-    # @staticmethod
-    # def verify_token(token):
-    #     try:
-    #         s = Serializer(app.config['SECRET_KEY'])
-    #         decoded_token = s.loads(token)
-    #         app.logger.info("Decoded token payload: %s", decoded_token)  # Log decoded token payload
-    #         user_id = decoded_token.get('user_id')
-    #         if user_id is None:
-    #             raise Exception("User ID not found in token")
-    #         user = User.query.get(user_id)
-    #         if user is None:
-    #             raise Exception("User not found")
-    #         return user
-    #     except Exception as e:
-    #         app.logger.error("Token verification failed: %s", str(e))  # Log error message
-    #         return None
-    
-    
-    # import jwt
-    # from datetime import datetime, timedelta
 
     def generate_token(self, expires_in=1800):
         exp = datetime.utcnow() + timedelta(seconds=expires_in)
