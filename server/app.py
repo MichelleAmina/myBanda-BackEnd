@@ -51,7 +51,36 @@ class Login(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
         
-        ##### add role to return of login
+class DeleteUser(Resource):
+    @jwt_required()
+    def delete(self, user_id):
+        try:
+            current_user_id = session.get('user_id')
+            current_user = User.query.get(current_user_id)
+            
+            if not current_user or current_user.role != 'banda_admin':
+                return {'message': 'Admin privileges required'}, 403
+            
+            user = User.query.get(user_id)
+            
+            if not user:
+                return {'message': 'User not found'}, 404
+
+            Review.query.filter_by(buyer_id=user_id).delete()
+            Review.query.filter_by(seller_id=user_id).delete()
+            
+            Order.query.filter_by(buyers_id=user_id).delete()
+            Order.query.filter_by(delivery_id=user_id).delete()
+
+            db.session.delete(user)
+            db.session.commit()
+            return {'message': 'User and related data deleted successfully'}, 200
+        
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
+
+
 
 
 class Products(Resource):
@@ -465,6 +494,7 @@ api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
 api.add_resource(Reviews, '/review')
+api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ProductsById, '/products/<int:id>')
 api.add_resource(OrderDetail, '/orders/<int:order_id>')
 api.add_resource(OrdersById, '/order/<int:order_id>')
