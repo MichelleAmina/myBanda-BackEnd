@@ -11,7 +11,7 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
-    role = db.Column(db.String, nullable=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+    role = db.Column(db.String, nullable=False, default=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
 
 
     ## Getting the token for reset password route
@@ -148,7 +148,7 @@ class OrderItem(db.Model, SerializerMixin):
 class Order(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String, nullable=False)  #'pending', 'assigned', 'dispatched', 'delivered'
+    status = db.Column(db.String, nullable=False, default="pending")  #'pending', 'assigned', 'dispatched', 'delivered'
     delivery_fee = db.Column(db.String)
     delivery_address = db.Column(db.String)
     contact = db.Column(db.String(100))
