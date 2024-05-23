@@ -15,6 +15,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask_mail import Mail
 from flask_mail import Message
+
 # from jwt.exceptions import DecodeErrors
 
 from dotenv import load_dotenv

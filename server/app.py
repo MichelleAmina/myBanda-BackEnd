@@ -5,8 +5,8 @@ import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-
+from email_validator import validate_email, EmailNotValidError
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 
 class SignUp(Resource):
@@ -19,10 +19,19 @@ class SignUp(Resource):
             location = data.get('location')
             contact = data.get('contact')
             role = data.get('role')
+            
+            # Validating the email format
+            try:
+                valid = validate_email(email)
+                email = valid.email  
+            except EmailNotValidError as e:
+                return {'message': str(e)}, 400 
+
 
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 return {'message': 'User with this email already exists'}, 400
+            
 
             user = User(username=username, email=email, location=location, contact=contact, role=role)
             user.password_hash = password
@@ -44,18 +53,19 @@ class Login(Resource):
             user = User.query.filter_by(email=email).first()
             if not user or not user.authenticate(password):
                 return {'message': 'Invalid email or password'}, 401
-            
-            session['user_id'] = user.id
+
             access_token = create_access_token(identity=user.id)
             return {'message': 'Login successful', 'access_token': access_token, 'role' : user.role}, 200
         except Exception as e:
             return {'message': str(e)}, 500
+
+
         
 class DeleteUser(Resource):
     @jwt_required()
     def delete(self, user_id):
         try:
-            current_user_id = session.get('user_id')
+            current_user_id = get_jwt_identity()
             current_user = User.query.get(current_user_id)
             
             if not current_user or current_user.role != 'banda_admin':
@@ -180,7 +190,7 @@ class Orders(Resource):
     @jwt_required()
     def get(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
@@ -195,7 +205,7 @@ class Orders(Resource):
     @jwt_required()
     def post(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
@@ -245,7 +255,7 @@ class OrdersById(Resource):
     @jwt_required()
     def patch(self, order_id):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
@@ -285,7 +295,7 @@ class OrderItems(Resource):
     @jwt_required()    
     def post(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
             
@@ -300,12 +310,10 @@ class OrderItems(Resource):
             if None in [order_id, product_id, quantity]:
                 return {'message': 'Required field(s) missing'}, 400
 
-            # Checking if the order exists
             order = Order.query.get(order_id)
             if not order:
                 return {'message': 'Order does not exist'}, 404
 
-            # Checking if the product exists
             product = Product.query.get(product_id)
             if not product:
                 return {'message': 'Product does not exist'}, 404
@@ -336,7 +344,7 @@ class Reviews(Resource):
     @jwt_required()
     def post(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
@@ -373,7 +381,7 @@ class OrderDetail(Resource):
     @jwt_required()
     def get(self, order_id):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             order = Order.query.filter_by(id=order_id, user_id=user_id).first()
             if not order:
                 return {"message": "Order not found"}, 404
