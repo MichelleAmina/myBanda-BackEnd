@@ -34,11 +34,15 @@ app.json.compact = False
 app.config["API_ENVIRONMENT"] = "sandbox"
 app.config["APP_KEY"] = "KaDetUGGhUCIlhHqmmvGfKFDSHXsL4GpvAsbR3s0Z6VjdOS8"
 app.config["APP_SECRET"] = "CfUuAoAi3exAyAF0yju9P9zSaAzLAYtIfgHjsMnAVoad5ASGnqqRyDbJGRDtykX8"
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 2525
+app.config['MAIL_USERNAME'] = '55202118fd1a22'
+app.config['MAIL_PASSWORD'] = '428503172768de'
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'youremail@gmail.com'
-app.config['MAIL_PASSWORD'] = 'password*123'
+app.config['MAIL_USE_SSL'] = False
+
+sender_email = os.environ.get('EMAIL')
+sender_password = os.environ.get('PASSWORD')
 
 metadata = MetaData(naming_convention={
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",

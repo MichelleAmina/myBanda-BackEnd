@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
 import json
 
 class SignUp(Resource):
@@ -72,6 +72,36 @@ class UserIndex(Resource):
             200
         )
         
+class DeleteUser(Resource):
+    @jwt_required()
+    def delete(self, user_id):
+        try:
+            current_user_id = session.get('user_id')
+            current_user = User.query.get(current_user_id)
+            
+            if not current_user or current_user.role != 'banda_admin':
+                return {'message': 'Admin privileges required'}, 403
+            
+            user = User.query.get(user_id)
+            
+            if not user:
+                return {'message': 'User not found'}, 404
+
+            Review.query.filter_by(buyer_id=user_id).delete()
+            Review.query.filter_by(seller_id=user_id).delete()
+            
+            Order.query.filter_by(buyers_id=user_id).delete()
+            Order.query.filter_by(delivery_id=user_id).delete()
+
+            db.session.delete(user)
+            db.session.commit()
+            return {'message': 'User and related data deleted successfully'}, 200
+        
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
+
+
 class ProductIndex(Resource):
     def get(self, id):
 
@@ -526,57 +556,75 @@ class LikedProducts(Resource):
         db.session.commit()
 
         return {'message': 'Succesfully deleted'}, 204
-
-
-# class ResetPassword(Resource):
-#     # def post(self):
-#     #     data = request.get_json()
-#     #     email = data.get('email')
-        
-#     #     if not email:
-#     #         return {'message': 'Please input your email address'}, 400
-        
-#     #     user = User.query.filter_by(email=email).first()
-#     #     if user:
-#     #         send_mail(user)
-#     #     return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
-#     pass
-
-# def send_mail(user):
-#     token = user.get_token()
-#     msg = Message('Password Reset Request', recipients=[user.email], sender='noreply@example.com')
-#     msg.body = f'''To reset your password, visit the following link:
-#     {url_for('recivetoken', token=token, _external=True)}
-#     If you did not make this request then simply ignore this email and no changes will be made.
-#     '''
     
-#     print(f'Test token for {user.email}: {token}')
-#     mail.send(msg)
+class ResetPassword(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            
+            if not email:
+                return {'message': 'Please input your email address'}, 400
+            
+            user = User.query.filter_by(email=email).first()
+            if user:
+                token = user.generate_token()
+                send_reset_password_email(email, token)
+            return {'message': 'If an account with that email exists, a reset token has been sent.'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
-# class ReciveToken(Resource):
-#     # def get(self, token):
-#     #     user = User.verify_token(token)
-#     #     if not user:
-#     #         return {"message": "Invalid token"}, 401
-#     #     return {"message": "Token is valid"}, 200
-#     pass
 
+def send_reset_password_email(email, token):
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587  
 
-# class ChangePassword(Resource):
-#     # def post(self):
-#     #     data = request.get_json()
-#     #     token = data.get('token')
-#     #     new_password = data.get('password')
-        
-#     #     user = User.verify_token(token)
-#     #     if not user:
-#     #         return {"message": "Invalid token"}, 401
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = email
+    msg['Subject'] = 'Password Reset Request'
 
-#     #     user.password_hash = new_password
-#     #     db.session.commit()
-#     #     return {"message": "Password has been reset successfully"}, 200
-#     pass
+    body = f'''To reset your password, visit the following link:
+    http://127.0.0.1:5555/change-password?token={token}
+    If you did not make this request then simply ignore this email and no changes will be made.
+    '''
+    msg.attach(MIMEText(body, 'plain'))
+
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.starttls()
+    server.login(sender_email, sender_password)
+    server.send_message(msg)
+    server.quit()
+
+class ReciveToken(Resource):
+    def get(self, token):
+        user = User.verify_token(token)
+        if not user:
+            return {"message": "Invalid token"}, 401
+        return {"message": "Token is valid"}, 200
+
+class ChangePassword(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            new_password = data.get('new_password')  
+            token = request.args.get('token')  # Extract token from query parameter
+
+            if not token or not new_password:
+                return {'message': 'Token and new password are required'}, 400
+
+            user = User.verify_token(token)
+            if not user:
+                return {'message': 'Invalid token'}, 401
+
+            user.password_hash = new_password
+            db.session.commit()
+
+            return {'message': 'Password has been changed successfully'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
 
 
 class Hello(Resource):
@@ -606,10 +654,11 @@ api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
 api.add_resource(Reviews, '/review')
 api.add_resource(LikedProducts, '/like')
-# api.add_resource(OrderDetail, '/orders/<int:order_id>')
-# api.add_resource(ResetPassword, '/reset-password')
-# api.add_resource(ReciveToken, '/reset-password/<token>')
-# api.add_resource(ChangePassword, '/change-password')
+api.add_resource(DeleteUser, '/del_user/<int:user_id>')
+api.add_resource(ResetPassword, '/reset-password')
+api.add_resource(ReciveToken, '/reset-password/<token>')
+api.add_resource(ChangePassword, '/change-password')
+
 
 
 
