@@ -395,8 +395,8 @@ class OrderIndex(Resource):
             data = request.get_json()
             new_status = data.get('status')
 
-            if not new_status:
-                return {'message': 'New status not provided'}, 400
+            # if not new_status:
+            #     return {'message': 'New status not provided'}, 400
 
             order = Order.query.filter_by(id=order_id).first()
             if not order:
