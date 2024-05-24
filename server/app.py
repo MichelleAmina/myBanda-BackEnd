@@ -374,9 +374,9 @@ class OrderItems(Resource):
   
 class OrderIndex(Resource):
     @jwt_required()
-    def get(self, id):
+    def get(self, order_id):
         try:
-            order = Order.query.filter_by(id=id).first()
+            order = Order.query.filter_by(id=order_id).first()
             if not order:
                 return {"message": "Order not found"}, 404
             return order.to_dict(), 200
@@ -398,7 +398,7 @@ class OrderIndex(Resource):
             if not new_status:
                 return {'message': 'New status not provided'}, 400
 
-            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
+            order = Order.query.filter_by(id=order_id).first()
             if not order:
                 return {'message': 'Order not found'}, 404
 
@@ -692,7 +692,7 @@ api.add_resource(Images, '/images')
 api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
-api.add_resource(OrderIndex, '/order/<int:id>')
+api.add_resource(OrderIndex, '/order/<int:order_id>')
 api.add_resource(Reviews, '/review')
 api.add_resource(LikedProducts, '/like')
 api.add_resource(DeleteUser, '/del_user/<int:user_id>')
