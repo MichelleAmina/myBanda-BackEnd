@@ -374,9 +374,9 @@ class OrderItems(Resource):
   
 class OrderIndex(Resource):
     @jwt_required()
-    def get(self, id):
+    def get(self, order_id):
         try:
-            order = Order.query.filter_by(id=id).first()
+            order = Order.query.filter_by(id=order_id).first()
             if not order:
                 return {"message": "Order not found"}, 404
             return order.to_dict(), 200
@@ -384,7 +384,7 @@ class OrderIndex(Resource):
             return {"message": str(e)}, 500
 
     @jwt_required()
-    def patch(self, id):
+    def patch(self, order_id):
         # print(f"Received ID: {id}")  
         try:
             user_id = get_jwt_identity()
@@ -400,8 +400,8 @@ class OrderIndex(Resource):
             # if not new_status:
             #     return {'message': 'New status not provided'}, 400
 
-            print(f"Querying order with ID: {id} and buyers_id: {user_id}")  
-            order = Order.query.filter_by(id=id, buyers_id=user_id).first()
+            print(f"Querying order with ID: {order_id} and buyers_id: {user_id}")  
+            order = Order.query.filter_by(id=order_id).first()
             # print(f"Found order: {order}") 
             if not order:
                 return {'message': 'Order not found'}, 404
