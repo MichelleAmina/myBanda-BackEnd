@@ -252,45 +252,6 @@ class Shops(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-    
-class OrderIndex(Resource):
-    @jwt_required()
-    def get(self, order_id):
-        try:
-            order = Order.query.filter_by(id=order_id).first()
-            if not order:
-                return {"message": "Order not found"}, 404
-            return order.to_dict(), 200
-        except Exception as e:
-            return {"message": str(e)}, 500  
-        
-    
-    @jwt_required()
-    def patch(self, order_id):
-        try:
-            user_id = get_jwt_identity()
-            
-            if not user_id:
-                return {'message': 'User not logged in'}, 401
-
-            data = request.get_json()
-            new_status = data.get('status')
-
-            if not new_status:
-                return {'message': 'New status not provided'}, 400
-
-            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
-            if not order:
-                return {'message': 'Order not found'}, 404
-
-            order.status = new_status
-            db.session.commit()
-
-            return make_response(order.to_dict(), 200)
-        except Exception as e:
-            db.session.rollback()
-            return {'message': str(e)}, 500
-
 class Orders(Resource):
     @jwt_required()
     def get(self):
@@ -349,6 +310,7 @@ class Orders(Resource):
             return {"message": str(e)}, 500
 
 
+
 class OrderItems(Resource):
     @jwt_required()
     def get(self):
@@ -398,6 +360,48 @@ class OrderItems(Resource):
             db.session.rollback()
             return {"message": str(e)}, 500
         
+
+  
+class OrderIndex(Resource):
+    @jwt_required()
+    def get(self, id):
+        try:
+            order = Order.query.filter_by(id=id).first()
+            if not order:
+                return {"message": "Order not found"}, 404
+            return order.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+        
+    
+    @jwt_required()
+    def patch(self, order_id):
+        try:
+            user_id = get_jwt_identity()
+            
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
+
+            data = request.get_json()
+            new_status = data.get('status')
+
+            if not new_status:
+                return {'message': 'New status not provided'}, 400
+
+            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
+            if not order:
+                return {'message': 'Order not found'}, 404
+
+            order.status = new_status
+            db.session.commit()
+
+            return make_response(order.to_dict(), 200)
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
+
+
+
 
 class Reviews(Resource):
     @jwt_required()
@@ -669,7 +673,6 @@ api.add_resource(Transactions, '/transactions')
 api.add_resource(Paybill, '/paybill') 
 api.add_resource(STK, '/stk')
 api.add_resource(UserIndex, '/user/<int:id>')
-api.add_resource(OrderIndex, '/order/<int:id>')
 api.add_resource(Users, '/users')
 api.add_resource(ProductIndex, '/product/<int:id>')
 api.add_resource(ShopIndex, '/shop/<int:id>')
@@ -681,6 +684,7 @@ api.add_resource(Images, '/images')
 api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
+api.add_resource(OrderIndex, '/order/<int:id>')
 api.add_resource(Reviews, '/review')
 api.add_resource(LikedProducts, '/like')
 api.add_resource(DeleteUser, '/del_user/<int:user_id>')
