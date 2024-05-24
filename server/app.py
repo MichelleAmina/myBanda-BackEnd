@@ -288,6 +288,7 @@ class Orders(Resource):
 
             total_price = data.get('total_price')
             status = data.get('status')
+            user_id_posted = data.get('user_id')
             delivery_fee = data.get('delivery_fee')
             delivery_address = data.get('delivery_address')
             contact = data.get('contact')
@@ -296,8 +297,8 @@ class Orders(Resource):
             city = data.get('city')
             delivery_persons = data.get('delivery_persons')
 
-            if None in [total_price, status, delivery_fee, delivery_address]:
-                return {'message': 'Required field(s) missing'}, 400
+            # if None in [total_price, status, delivery_fee, delivery_address]:
+            #     return {'message': 'Required field(s) missing'}, 400
 
             # Getting the current time
             created_at = datetime.now(timezone.utc)
@@ -305,6 +306,13 @@ class Orders(Resource):
             order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
             db.session.add(order)
             db.session.commit()
+
+
+            for item in data['items']:
+                orderitem = OrderItem(order_id=order.id, product_id=item['id'], quantity=item['quantity'])
+                db.session.add(orderitem)
+                db.session.commit()
+
             return make_response(order.to_dict(), 201)
         
         except Exception as e:
@@ -366,9 +374,9 @@ class OrderItems(Resource):
   
 class OrderIndex(Resource):
     @jwt_required()
-    def get(self, id):
+    def get(self, order_id):
         try:
-            order = Order.query.filter_by(id=id).first()
+            order = Order.query.filter_by(id=order_id).first()
             if not order:
                 return {"message": "Order not found"}, 404
             return order.to_dict(), 200
@@ -390,7 +398,7 @@ class OrderIndex(Resource):
             if not new_status:
                 return {'message': 'New status not provided'}, 400
 
-            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
+            order = Order.query.filter_by(id=order_id).first()
             if not order:
                 return {'message': 'Order not found'}, 404
 
@@ -452,14 +460,11 @@ class Reviews(Resource):
             db.session.rollback()
             return {"message": str(e)}, 500
         
+
 class Prompt(Resource):
     def post(self):
-        data = request.get_json()
-
-        number = data['contact']
-        amount = data['amount']
-        # number = "254700622570"
-        # amount = '2'
+        number = request.get_json()['contact']
+        amount = request.get_json()['amount']
 
         data = {
         "business_shortcode": "174379",
@@ -472,6 +477,7 @@ class Prompt(Resource):
         }
         resp = mpesa_api.MpesaExpress.stk_push(**data)
         return resp,200
+    
 
 class STK(Resource):
     def post(self):
@@ -686,7 +692,7 @@ api.add_resource(Images, '/images')
 api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
-api.add_resource(OrderIndex, '/order/<int:id>')
+api.add_resource(OrderIndex, '/order/<int:order_id>')
 api.add_resource(Reviews, '/review')
 api.add_resource(LikedProducts, '/like')
 api.add_resource(DeleteUser, '/del_user/<int:user_id>')
@@ -700,5 +706,3 @@ api.add_resource(Prompt, '/prompt')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
-
-

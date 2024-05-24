@@ -1,3 +1,0 @@
-cd server; pipenv install 
-
-gunicorn --chdir server app:app

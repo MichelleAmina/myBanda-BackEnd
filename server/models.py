@@ -233,5 +233,3 @@ class Transaction(db.Model, SerializerMixin):
     Amount = db.Column(db.String)
     TransactionDate = db.Column(db.String)
     PhoneNumber = db.Column(db.String)
-
-
