@@ -195,6 +195,8 @@ class Shops(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
+        
+        
 class Orders(Resource):
     @jwt_required()
     def get(self):
