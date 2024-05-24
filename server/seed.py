@@ -18,6 +18,7 @@ with app.app_context():
     db.session.commit()
     User.query.delete()
     db.session.commit()
+
     
     print('Seeding user...')
     # sellers
@@ -224,3 +225,26 @@ with app.app_context():
     likes = [like1, like2, like3, like4]
     db.session.add_all(likes)
     db.session.commit()
+    
+    
+    
+    def create_super_admin():
+        username = 'BandaAdmin'
+        email = 'superadmin@gmail.com'
+        password = 'superadmin@gmail.com'
+        
+        # Checking if the super admin already exists
+        super_user = User.query.filter_by(email=email).first()
+        if super_user:
+            print('Super admin already exists.')
+        else:
+            # Creating the super admin if it doesn't exist
+            super_admin = User(username=username, email=email, is_banda_admin=True)
+            super_admin.password_hash = password
+            db.session.add(super_admin)
+            db.session.commit()
+            print('Super admin created successfully.')
+    
+create_super_admin()
+
+   

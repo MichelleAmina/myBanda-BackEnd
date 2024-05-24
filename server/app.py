@@ -57,6 +57,99 @@ class Login(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
         
+        
+# def create_super_admin():
+#     with app.app_context():
+#         username = 'BandaAdmin'
+#         email = 'superadmin@gmail.com'
+#         password = 'superadmin@gmail.com'
+        
+#         # Checking if the super admin already exists
+#         super_user = User.query.filter_by(email=email).first()
+#         if super_user:
+#             print('Super admin already exists.')
+#         else:
+#             # Creating the super admin if it doesn't exist
+#             super_admin = User(username=username, email=email, is_banda_admin=True)
+#             super_admin.password_hash = password
+#             db.session.add(super_admin)
+#             db.session.commit()
+#             print('Super admin created successfully.')
+
+        
+
+class Admin(Resource):
+    def get(self):
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user.is_banda_admin:
+            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+        
+        return jsonify({"message" : "Welcome Banda Admin"})
+
+class UserFetchAdmin(Resource):
+    @jwt_required()
+    def get(self):
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user.is_banda_admin:
+            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+        
+        users = User.query.all()
+        serialized_users = [user.serialize() for user in users]
+        return jsonify(serialized_users)
+
+
+class UserDetaislAdmin(Resource):
+    @jwt_required()
+    def get(self, user_id):
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user.is_banda_admin:
+            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+        
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        return jsonify(user.serialize())
+
+    @jwt_required()
+    def put(self, user_id):
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user.is_banda_admin:
+            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+        
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        
+        ###### I Will Come To Update user data based on request data
+        ##### Example: user.username = request.json['username']
+        # Then... db.session.commit()
+        return jsonify(message="User updated successfully")
+
+    @jwt_required()
+    def delete(self, user_id):
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user.is_banda_admin:
+            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+        
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify(message="User deleted successfully")
+
+
 
 class Users(Resource):
     def get(self):
@@ -688,11 +781,15 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
+api.add_resource(Admin, '/admin')
+api.add_resource(UserFetchAdmin, '/users')
+api.add_resource(UserDetaislAdmin, '/users/<int:user_id>')
 
 
 
 
 if __name__ == '__main__':
+    # create_super_admin()
     app.run(port=5555, debug=True)
 
 
