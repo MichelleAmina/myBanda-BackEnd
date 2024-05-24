@@ -288,6 +288,7 @@ class Orders(Resource):
 
             total_price = data.get('total_price')
             status = data.get('status')
+            user_id_posted = data.get('user_id')
             delivery_fee = data.get('delivery_fee')
             delivery_address = data.get('delivery_address')
             contact = data.get('contact')
@@ -296,8 +297,8 @@ class Orders(Resource):
             city = data.get('city')
             delivery_persons = data.get('delivery_persons')
 
-            if None in [total_price, status, delivery_fee, delivery_address]:
-                return {'message': 'Required field(s) missing'}, 400
+            # if None in [total_price, status, delivery_fee, delivery_address]:
+            #     return {'message': 'Required field(s) missing'}, 400
 
             # Getting the current time
             created_at = datetime.now(timezone.utc)
@@ -305,6 +306,13 @@ class Orders(Resource):
             order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
             db.session.add(order)
             db.session.commit()
+
+
+            for item in data['items']:
+                orderitem = OrderItem(order_id=order.id, product_id=item['id'], quantity=item['quantity'])
+                db.session.add(orderitem)
+                db.session.commit()
+
             return make_response(order.to_dict(), 201)
         
         except Exception as e:
@@ -451,11 +459,12 @@ class Reviews(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
+        
 
-class STK(Resource):
-    def get(self):
-        number = "254700622570"
-        amount = '2'
+class Prompt(Resource):
+    def post(self):
+        number = request.get_json()['contact']
+        amount = request.get_json()['amount']
 
         data = {
         "business_shortcode": "174379",
@@ -469,6 +478,8 @@ class STK(Resource):
         resp = mpesa_api.MpesaExpress.stk_push(**data)
         return resp,200
     
+
+class STK(Resource):
     def post(self):
         json_data = request.get_json()
         result_code = json_data["Body"]["stkCallback"]["ResultCode"]
@@ -688,6 +699,7 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
+api.add_resource(Prompt, '/prompt')
 
 
 
