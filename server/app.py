@@ -268,7 +268,8 @@ class OrderIndex(Resource):
     @jwt_required()
     def patch(self, order_id):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
+            
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
@@ -314,7 +315,7 @@ class Orders(Resource):
     @jwt_required()
     def post(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
@@ -363,7 +364,7 @@ class OrderItems(Resource):
     @jwt_required()
     def post(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
             
@@ -413,7 +414,7 @@ class Reviews(Resource):
     @jwt_required()
     def post(self):
         try:
-            user_id = session.get('user_id')
+            user_id = get_jwt_identity()
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
