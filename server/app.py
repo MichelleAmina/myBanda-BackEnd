@@ -1,12 +1,13 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mail, Message, url_for, sender_email, sender_password
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+
 
 class SignUp(Resource):
     def post(self):
@@ -18,7 +19,7 @@ class SignUp(Resource):
             location = data.get('location')
             contact = data.get('contact')
             role = data.get('role')
-
+            
             # Validating the email format
             try:
                 valid = validate_email(email)
@@ -26,9 +27,11 @@ class SignUp(Resource):
             except EmailNotValidError as e:
                 return {'message': str(e)}, 400 
 
+
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 return {'message': 'User with this email already exists'}, 400
+            
 
             user = User(username=username, email=email, location=location, contact=contact, role=role)
             user.password_hash = password
@@ -50,39 +53,13 @@ class Login(Resource):
             user = User.query.filter_by(email=email).first()
             if not user or not user.authenticate(password):
                 return {'message': 'Invalid email or password'}, 401
-            
-            # session['user_id'] = user.id
+
             access_token = create_access_token(identity=user.id)
-            return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
+            return {'message': 'Login successful', 'access_token': access_token, 'role' : user.role}, 200
         except Exception as e:
             return {'message': str(e)}, 500
-        
 
-class Users(Resource):
-    def get(self):
-        
-        users = [user.to_dict() for user in User.query.all()]
 
-        if not users:
-            return {"message":"No users to display!"}, 404
-
-        return make_response(
-            users,
-            200
-        )
-
-class UserIndex(Resource):
-    def get(self, id):
-
-        user = User.query.filter(User.id == id).first()
-
-        if not user:
-            return {"message":"User does not exist!"}, 404
-
-        return make_response(
-            user.to_dict(),
-            200
-        )
         
 class DeleteUser(Resource):
     @jwt_required()
@@ -114,30 +91,7 @@ class DeleteUser(Resource):
             return {'message': str(e)}, 500
 
 
-class ProductIndex(Resource):
-    def get(self, id):
-        try:
-            product = Product.query.filter_by(id=id).first()
-            if not product:
-                return {"message": "Product not found"}, 404
-            return product.to_dict(), 200
-        except Exception as e:
-            return {"message": str(e)}, 500
-    
-    def patch(self, id):
-        try:
-            data = request.get_json()
-            product = Product.query.filter_by(id=id).first()
-            if not product:
-                return {"message": "Product not found"}, 404
 
-            for key, value in data.items():
-                setattr(product, key, value)
-            db.session.commit()
-
-            return product.to_dict(), 200
-        except Exception as e:
-            return {"message": str(e)}, 500
 
 class Products(Resource):
     def get(self):
@@ -155,30 +109,31 @@ class Products(Resource):
             return {"message": str(e)}, 500
     
     def post(self):
-        data = request.get_json()
-        name = data.get('name')
-        description = data.get('description')
-        price = data.get('price')
-        image_url = data.get('image_url')
-        quantity_available = data.get('quantity_available')
-        category = data.get('category')
-        shop_id = data.get('shop_id')
-        tag = data.get('get')
+        try:
+            data = request.get_json()
+            name = data.get('name')
+            description = data.get('description')
+            price = data.get('price')
+            quantity_available = data.get('quantity_available')
+            category = data.get('category')
+            shop_id = data.get('shop_id')
+
+            if not all([name, description, price, quantity_available, category, shop_id]):
+                return {"message": "All fields are required!"}, 400
+
+            product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id)
+            db.session.add(product)
+            db.session.commit()
+
+            return make_response(
+                product.to_dict(),
+                201
+            )
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
 
 
-        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id, tag=tag) 
-        db.session.add(product)
-        db.session.commit()
-        image = ProductsImages(image_url=image_url, product=product)
-        db.session.add(image)
-        db.session.commit()
-
-        # product.image_url = json.loads(product.image_url)
-
-        return make_response(
-            product.to_dict(),
-            201
-        )
     
 class Images(Resource):
     def post(self):
@@ -202,16 +157,7 @@ class Images(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-    
-class ShopIndex(Resource):
-    def get(self, id):
 
-        shop = Shop.query.filter(Shop.id == id).first()
-
-        return make_response(
-            shop.to_dict(),
-            200
-        )
     
 class Shops(Resource):
     def get(self):
@@ -228,87 +174,42 @@ class Shops(Resource):
     def post(self):
         try:
             data = request.get_json()
-
+            
             name = data.get('name')
             description = data.get('description')
             logo_image_url = data.get('logo_image_url')
             banner_image_url = data.get('banner_image_url')
             seller_id = data.get('seller_id')
-            contact = data.get('contact')
-            location = data.get('location')
 
             if not name or not seller_id:
                 return {"message": "name and seller_id are required fields!"}, 400
 
-            shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id, contact=contact, location=location)
+            shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id)
             db.session.add(shop)
             db.session.commit()
 
             return make_response(
                 shop.to_dict(),
-                200
+                201
             )
-        
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-    
-class OrderIndex(Resource):
-    @jwt_required()
-    def get(self, order_id):
-        try:
-            order = Order.query.filter_by(id=order_id).first()
-            if not order:
-                return {"message": "Order not found"}, 404
-            return order.to_dict(), 200
-        except Exception as e:
-            return {"message": str(e)}, 500  
-        
-    
-    @jwt_required()
-    def patch(self, order_id):
-        try:
-            user_id = get_jwt_identity()
-            
-            if not user_id:
-                return {'message': 'User not logged in'}, 401
 
-            data = request.get_json()
-            new_status = data.get('status')
-
-            if not new_status:
-                return {'message': 'New status not provided'}, 400
-
-            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
-            if not order:
-                return {'message': 'Order not found'}, 404
-
-            order.status = new_status
-            db.session.commit()
-
-            return make_response(order.to_dict(), 200)
-        except Exception as e:
-            db.session.rollback()
-            return {'message': str(e)}, 500
 
 class Orders(Resource):
     @jwt_required()
     def get(self):
         try:
             user_id = get_jwt_identity()
-            
             if not user_id:
                 return {'message': 'User not logged in'}, 401
-            
+
             orders = [order.to_dict() for order in Order.query.all()]
             if not orders:
                 return {"message": "Orders are not added"}, 404
 
-            return make_response(
-                orders, 
-                200
-                )
-    
+            return make_response(orders, 200)
         except Exception as e:
             return {"message": str(e)}, 500
 
@@ -342,11 +243,52 @@ class Orders(Resource):
             order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
             db.session.add(order)
             db.session.commit()
+
             return make_response(order.to_dict(), 201)
-        
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
+        
+     
+     
+class OrdersById(Resource):
+    @jwt_required()
+    def get(self, order_id):
+        try:
+            order = Order.query.filter_by(id=order_id).first()
+            if not order:
+                return {"message": "Order not found"}, 404
+            return order.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500  
+        
+        
+    @jwt_required()
+    def patch(self, order_id):
+        try:
+            user_id = get_jwt_identity()
+            if not user_id:
+                return {'message': 'User not logged in'}, 401
+
+            data = request.get_json()
+            new_status = data.get('status')
+
+            if not new_status:
+                return {'message': 'New status not provided'}, 400
+
+            order = Order.query.filter_by(id=order_id, buyers_id=user_id).first()
+            if not order:
+                return {'message': 'Order not found'}, 404
+
+            order.status = new_status
+            db.session.commit()
+
+            return make_response(order.to_dict(), 200)
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
+        
+
 
 
 class OrderItems(Resource):
@@ -360,8 +302,8 @@ class OrderItems(Resource):
             return make_response(order_items, 200)
         except Exception as e:
             return {"message": str(e)}, 500
-    
-    @jwt_required()
+
+    @jwt_required()    
     def post(self):
         try:
             user_id = get_jwt_identity()
@@ -379,12 +321,10 @@ class OrderItems(Resource):
             if None in [order_id, product_id, quantity]:
                 return {'message': 'Required field(s) missing'}, 400
 
-            # Checking if the order exists
             order = Order.query.get(order_id)
             if not order:
                 return {'message': 'Order does not exist'}, 404
 
-            # Checking if the product exists
             product = Product.query.get(product_id)
             if not product:
                 return {'message': 'Product does not exist'}, 404
@@ -397,7 +337,8 @@ class OrderItems(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-        
+
+
 
 class Reviews(Resource):
     @jwt_required()
@@ -410,7 +351,7 @@ class Reviews(Resource):
             return make_response(reviews, 200)
         except Exception as e:
             return {"message": str(e)}, 500
-    
+
     @jwt_required()
     def post(self):
         try:
@@ -445,154 +386,49 @@ class Reviews(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
+
+
+class OrderDetail(Resource):
+    @jwt_required()
+    def get(self, order_id):
+        try:
+            user_id = get_jwt_identity()
+            order = Order.query.filter_by(id=order_id, user_id=user_id).first()
+            if not order:
+                return {"message": "Order not found"}, 404
+
+            return order.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
         
-class Prompt(Resource):
-    def post(self):
-        data = request.get_json()
 
-        number = data['contact']
-        amount = data['amount']
-        # number = "254700622570"
-        # amount = '2'
+class ProductsById(Resource):
+    def get(self, id):
+        try:
+            product = Product.query.filter_by(id=id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
+            return product.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+    
+    def patch(self, id):
+        try:
+            data = request.get_json()
+            product = Product.query.filter_by(id=id).first()
+            if not product:
+                return {"message": "Product not found"}, 404
 
-        data = {
-        "business_shortcode": "174379",
-        "passcode": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
-        "amount": amount,
-        "phone_number": number,
-        "reference_code": "Banda",
-        "callback_url": "https://mybanda-backend-88l2.onrender.com/stk",
-        "description": "Reverse afterwards"
-        }
-        resp = mpesa_api.MpesaExpress.stk_push(**data)
-        return resp,200
-
-class STK(Resource):
-    def post(self):
-        json_data = request.get_json()
-        result_code = json_data["Body"]["stkCallback"]["ResultCode"]
-        message = {
-            "ResultCode": result_code,
-            "ResultDesc": "success",
-            "ThirdPartyTransID": "h234k2h4krhk2"
-        }
-
-        if result_code == 0:
-            amt = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][0]["Value"]
-            code = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][1]["Value"]
-            date = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][3]["Value"]   
-            num = json_data["Body"]["stkCallback"]["CallbackMetadata"]["Item"][4]["Value"]
-
-            transaction = Transaction(Amount=amt, MpesaReceiptNumber=code,TransactionDate=date,PhoneNumber=num)
-            db.session.add(transaction)
+            for key, value in data.items():
+                setattr(product, key, value)
             db.session.commit()
 
-        return message,200
-    
-class Paybill(Resource):
-    def get(self):
-        number = "254796277018"
-        amount = '1'
-
-        reg_data={
-            "shortcode": "174379",
-            "response_type": "Completed",
-            "validation_url": "https://mybanda-backend-88l2.onrender.com/paybill"
-        }
-        v = mpesa_api.C2B.register(**reg_data)
-
-        test_data={
-            "shortcode": "174379",
-            "command_id": "CustomerBuyGoodsOnline",
-            "amount": amount,
-            "msisdn": number,
-            "bill_ref_number": "Banda goods payment"
-        }
-        new_v = mpesa_api.C2B.simulate(**test_data)
-        return jsonify(new_v), 200
-    
-    def post(self):
-        json_data = request.get_json()
-
-        code = json_data["TransID"]
-        date = json_data["TransTime"]
-        num = json_data["MSISDN"]
-        amt = json_data["TransAmount"]
-
-        transaction = Transaction(Amount=amt, MpesaReceiptNumber=code, TransactionDate=date, PhoneNumber=num)
-        db.session.add(transaction)
-        db.session.commit()
-
-        return json_data, 200
-
-class Transactions(Resource):
-    def get(self):
-        transaction = [transaction.to_dict() for transaction in Transaction.query.all()]
-        
-        if not transaction:
-            return {"message": "Transactions not yet added"}, 404
-
-        return make_response(
-            transaction, 
-            200
-            )
-
-class LikedProducts(Resource):
-    def get(self):
-
-        liked = [liked.to_dict() for liked in LikedProduct.query.all()]
-
-        if not liked:
-            return [], 404
-        
-        return make_response(
-            liked,
-            200
-        )
-    
-    def post(self):
-
-        data = request.get_json()
-
-        product_id = data["product_id"]
-        # buyers_id = session['user_id']
+            return product.to_dict(), 200
+        except Exception as e:
+            return {"message": str(e)}, 500
 
 
-        buyers_id = 108
 
-        if None in [buyers_id, product_id]:
-                return {'message': 'Required field(s) missing'}, 400
-        
-        # Checking if the product exists
-        product = Product.query.get(product_id)
-        if not product:
-            return {'message': 'Product does not exist'}, 404
-
-        
-        buyer = User.query.get(buyers_id)
-        if not buyer:
-            return {'message': 'Buyer does not exist'}, 404
-        
-        exists = LikedProduct.query.filter(LikedProduct.product_id == product_id).first()
-        if exists:
-            return {'message': 'Item already on the wishlist'}, 400
-        
-        like = LikedProduct(product=product, buyer=buyer)
-        db.session.add(like)
-        db.session.commit()
-
-        return make_response(like.to_dict(), 200)
-        # return {'success': 'Liked'}, 201
-        
-    def delete(self):
-        like_id = request.get_json()['id']
-
-        liked = LikedProduct.query.filter(LikedProduct.id == like_id).first()
-        db.session.delete(liked)
-        db.session.commit()
-
-        return {'message': 'Succesfully deleted'}, 204
-    
 class ResetPassword(Resource):
     def post(self):
         try:
@@ -658,8 +494,7 @@ class ChangePassword(Resource):
             return {'message': 'Password has been changed successfully'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
-
-
+     
 
 class Hello(Resource):
     def get(self):
@@ -687,12 +522,14 @@ api.add_resource(Shops, '/shop')
 api.add_resource(Orders, '/order')
 api.add_resource(OrderItems, '/orderitems')
 api.add_resource(Reviews, '/review')
-api.add_resource(LikedProducts, '/like')
 api.add_resource(DeleteUser, '/del_user/<int:user_id>')
+api.add_resource(ProductsById, '/products/<int:id>')
+api.add_resource(OrderDetail, '/orders/<int:order_id>')
+api.add_resource(OrdersById, '/order/<int:order_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
-api.add_resource(Prompt, '/prompt')
+
 
 
 

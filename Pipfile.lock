@@ -1,7 +1,11 @@
 {
     "_meta": {
         "hash": {
+<<<<<<< HEAD
             "sha256": "42869d562ef5209ca4d023b16509b612dd547ef6b237b0699852d82ad282e3e0"
+=======
+            "sha256": "d17e381d80524ed631bd95ffac66d5fd5fb2bf87756ff2238a4d691f7392b991"
+>>>>>>> robins
         },
         "pipfile-spec": 6,
         "requires": {
@@ -765,6 +769,7 @@
             "markers": "python_version >= '3.8'",
             "version": "==4.11.0"
         },
+<<<<<<< HEAD
         "urllib3": {
             "hashes": [
                 "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d",
@@ -773,6 +778,8 @@
             "markers": "python_version >= '3.8'",
             "version": "==2.2.1"
         },
+=======
+>>>>>>> robins
         "validate-email": {
             "hashes": [
                 "sha256:784719dc5f780be319cdd185dc85dd93afebdb6ebb943811bc4c7c5f9c72aeaf"
@@ -794,7 +801,11 @@
                 "sha256:6278d9ddbcfb1f1089a88fde84481528b07b0e10474e09dcfe53dad4069fa059",
                 "sha256:dce197b859eb796242b0622af1b8beb0a722d52aa2f57133ead08edd5bf5374e"
             ],
+<<<<<<< HEAD
             "markers": "python_version >= '3.8'",
+=======
+            "markers": "python_version < '3.10'",
+>>>>>>> robins
             "version": "==3.18.2"
         }
     },

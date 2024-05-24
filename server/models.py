@@ -1,6 +1,11 @@
 from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, bcrypt, datetime, timezone, timedelta, Serializer, app, SECRET_KEY
 from itsdangerous import URLSafeSerializer
 import jwt
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> robins
 
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,7 +14,43 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
+<<<<<<< HEAD
     role = db.Column(db.String, nullable=False, default=False)   # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+=======
+    role = db.Column(db.String, nullable=False, default=False)  # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+
+
+    ## Getting the token for reset password route
+
+
+    def generate_token(self, expires_in=1800):
+        exp = datetime.utcnow() + timedelta(seconds=expires_in)
+        payload = {
+            'user_id': self.id,
+            'exp': exp
+        }
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+        return token
+
+    @staticmethod
+    def verify_token(token):
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            user_id = payload.get('user_id')
+            if not user_id:
+                raise jwt.InvalidTokenError("User ID not found in token")
+            return User.query.get(user_id)
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
+
+
+    
+
+    def __repr__(self):
+        return f'<User {self.email} of role {self.role}>'
+>>>>>>> robins
 
     # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)
@@ -158,7 +199,10 @@ class Order(db.Model, SerializerMixin):
     country = db.Column(db.String(100))
     city = db.Column(db.String(100))
     delivery_persons = db.Column(db.String(100))
+<<<<<<< HEAD
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
+=======
+>>>>>>> robins
     
     buyers_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     buyer = db.relationship('User', back_populates='my_orders', foreign_keys=[buyers_id], lazy='joined')

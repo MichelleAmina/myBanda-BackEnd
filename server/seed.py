@@ -23,9 +23,15 @@ with app.app_context():
     # sellers
     rob = User(username="robins", email="rob@gmail.com", location="Nairobi", contact="12345" ,role="seller")
     rob.password_hash = "seller"
+<<<<<<< HEAD
     ndanu = User(username="ndanu", email="ndanu@gmail.com", location="Kisumu", contact="12345", role="seller")
     ndanu.password_hash = "seller2"
     john = User(username="john", email="john@gmail.com", location="Nakuru", contact="12345", role="seller")
+=======
+    ndanu = User(username="ndanu", email="ndanu@gmail.com", lacation="Kisumu", contact="12345", role="seller")
+    ndanu.password_hash = "seller2"
+    john = User(username="john", email="john@gmail.com", lacation="Nakuru", contact="12345", role="seller")
+>>>>>>> robins
     john.password_hash = "seller3"
 
     # buyers
@@ -41,7 +47,11 @@ with app.app_context():
     vic.password_hash = "bolt"
     sam = User(username="boda", email="sam@gmail.com", location="Kisumu", contact="0700000005", role="delivery", is_banda_delivery=True)
     sam.password_hash = "bolt2"
+<<<<<<< HEAD
     kevin = User(username="kevin", email="kevin@gmail.com", location="Nakuru", contact="0700000006", role="delivery", is_banda_delivery=True)
+=======
+    kevin = User(username="boda", email="kevin@gmail.com", location="Nakuru", contact="0700000006", role="delivery", is_banda_delivery=True)
+>>>>>>> robins
     kevin.password_hash = "bolt3"
 
     # admin
@@ -78,6 +88,7 @@ with app.app_context():
                  location="Nakuru",
                  contact="0700000002",
                  seller=john)
+<<<<<<< HEAD
     shops = [shop1, shop2, shop3]
     db.session.add_all(shops)
     db.session.commit()
@@ -107,6 +118,36 @@ with app.app_context():
     potter = Product(name="potter", description="Follow Harry Potter through Hogwarts as he faces he who must not be mentioned.", price="1300", quantity_available="22", category="Books and Stationary", tag="hot", shop=shop1)
     burgers = Product(name="burgers", description="You've worked so hard. Feel the cheese drip down your lips.", price="750", quantity_available="23", category="Food and Beverages", tag="popular", shop=shop2)
     smoothie = Product(name="smoothie", description="Healthy drinks to get you through your day.", price="600", quantity_available="24", category="Food and Beverages", tag="new", shop=shop2)
+=======
+    db.session.add_all(shop1, shop2, shop3)
+    db.session.commit()
+
+    print('Seeding products...')
+    lamp = Product(name="lamp", description="Bright lamp to illuminate your working space.", price="300", quantity_available="1", category="Home decor", shop=shop1) 
+    painting = Product(name="painting", description="Masterpiece by a young artist leaving his heart on the canvas.", price="10000", quantity_available="2", category="Home decor", shop=shop1)
+    tv = Product(name="tv", description="60 inch with OLED display.", price="60000", quantity_available="3", category="Appliances", shop=shop2)
+    microwave = Product(name="microwave", description="10 power levels for all your heating needs.", price="7000", quantity_available="4", category="Appliances", shop=shop2)
+    lawnmower = Product(name="lawnmower", description="3 power settings to cur all your grass in all terrain.", price="12000", quantity_available="5", category="Tools and Hardware", shop=shop3)
+    hammer = Product(name="hammer", description="Stainless steel free of rust and study for all your household needs.", price="800", quantity_available="6", category="Tools and Hardware", shop=shop3)
+    dress = Product(name="dress", description="Flowing dresses to bring out your inner beauty.", price="2200", quantity_available="7", category="Clothing", shop=shop1)
+    shoe = Product(name="shoe", description="White with laces.", price="1000", quantity_available="8", category="Clothing", shop=shop1)
+    watch = Product(name="watch", description="Handmade and state of the art technology.", price="5000", quantity_available="9", category="Accessories", shop=shop2)
+    ring  = Product(name="ring", description="Diamond to show how much your love persists.", price="250", quantity_available="10", category="Accessories", shop=shop2)
+    lipstick = Product(name="lipstick", description="Wear your courage boldly!", price="1000", quantity_available="11", category="Beauty and Skincare", shop=shop3)
+    mascara = Product(name="mascara", description="They'll all stare.", price="1200", quantity_available="12", category="Beauty and Skincare", shop=shop3)
+    boots = Product(name="boots", description="Thick soles perfect for hiking.", price="1500", quantity_available="13", category="Outdoor Gear", shop=shop1)
+    rope = Product(name="rope", description="For your clothes, your patches and outdoor activites.", price="350", quantity_available="14", category="Outdoor Gear", shop=shop1)
+    phone = Product(name="phone", description="Clear display with storage upto 1TB.", price="98000", quantity_available="15", category="Electronics", shop=shop1)
+    laptop = Product(name="laptop", description="Running an M4 chip at speeds you never imagined.", price="40000", quantity_available="16", category="Electronics",shop=shop1)
+    medicine = Product(name="medicine", description="Drink your cold away.", price="900", quantity_available="17", category="Health and Wellness", shop=shop2)
+    bandage = Product(name="bandage", description="For the quick fix from the unfortunate accident.", price="1700", quantity_available="18", category="Health and Wellness", shop=shop2)
+    playstation = Product(name="playstation", description="Bring your imagination to life with immersive games and unlimited storage.", price="45000", quantity_available="19", category="Toys and Games", shop=shop3)
+    monopoly = Product(name="monopoly", description="Learn your finances while beating your friends.", price="1000", quantity_available="20", category="Toys and Games", shop=shop3)
+    book  = Product(name="book", description="Time to upskill your software skills using well descrbed examples.", price="910", quantity_available="21", category="Books and Stationary", shop=shop1)
+    potter = Product(name="potter", description="Follow Harry Potter through Hogwarts as he faces he who must not be mentioned.", price="1300", quantity_available="22", category="Books and Stationary", shop=shop1)
+    burgers = Product(name="burgers", description="You've worked so hard. Feel the cheese drip down your lips.", price="750", quantity_available="23", category="Food and Beverages", shop=shop2)
+    smoothie = Product(name="smoothie", description="Healthy drinks to get you through your day.", price="600", quantity_available="24", category="Food and Beverages", shop=shop2)
+>>>>>>> robins
     products = [lamp, painting, tv, microwave, lawnmower, hammer, dress, shoe, watch, ring, lipstick, mascara, boots, rope, phone, laptop, medicine, bandage, playstation, monopoly, book, potter, burgers, smoothie]
     db.session.add_all(products)
     db.session.commit()
@@ -214,6 +255,7 @@ with app.app_context():
     playstation_order= OrderItem(quantity=2, order=order_2, product=playstation)
     orders = [lamp_order_1, painting_order_1, tv_order_1, laptop_order_1, playstation_order]
     db.session.add_all(orders)
+<<<<<<< HEAD
     db.session.commit()
 
     print("Liking products...")
@@ -223,4 +265,6 @@ with app.app_context():
     like4 = LikedProduct(buyer=mike, product=laptop)
     likes = [like1, like2, like3, like4]
     db.session.add_all(likes)
+=======
+>>>>>>> robins
     db.session.commit()

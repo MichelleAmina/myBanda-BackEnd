@@ -24,8 +24,11 @@ Faker = "*"
 python-dotenv = "*"
 Flask-JWT-Extended = "*"
 flask-session = "*"
+<<<<<<< HEAD
 flask-mpesa = "*"
 requests = "*"
+=======
+>>>>>>> robins
 flask-mail = "*"
 itsdangerous = "*"
 py3-validate-email = "*"
