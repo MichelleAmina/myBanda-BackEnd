@@ -374,36 +374,41 @@ class OrderItems(Resource):
   
 class OrderIndex(Resource):
     @jwt_required()
-    def get(self, order_id):
+    def get(self, id):
         try:
-            order = Order.query.filter_by(id=order_id).first()
+            order = Order.query.filter_by(id=id).first()
             if not order:
                 return {"message": "Order not found"}, 404
             return order.to_dict(), 200
         except Exception as e:
             return {"message": str(e)}, 500
-        
-    
+
     @jwt_required()
-    def patch(self, order_id):
+    def patch(self, id):
+        # print(f"Received ID: {id}")  
         try:
             user_id = get_jwt_identity()
-            
+            # print(f"User ID from JWT: {user_id}") 
+
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
             data = request.get_json()
             new_status = data.get('status')
+            # print(f"New status from request: {new_status}") 
 
             if not new_status:
                 return {'message': 'New status not provided'}, 400
 
-            order = Order.query.filter_by(id=order_id).first()
+            print(f"Querying order with ID: {id} and buyers_id: {user_id}")  
+            order = Order.query.filter_by(id=id, buyers_id=user_id).first()
+            # print(f"Found order: {order}") 
             if not order:
                 return {'message': 'Order not found'}, 404
 
             order.status = new_status
             db.session.commit()
+            # print(f"Order status updated to: {order.status}")  
 
             return make_response(order.to_dict(), 200)
         except Exception as e:
