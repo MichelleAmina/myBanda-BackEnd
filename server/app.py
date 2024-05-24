@@ -397,8 +397,8 @@ class OrderIndex(Resource):
             new_status = data.get('status')
             # print(f"New status from request: {new_status}") 
 
-            if not new_status:
-                return {'message': 'New status not provided'}, 400
+            # if not new_status:
+            #     return {'message': 'New status not provided'}, 400
 
             print(f"Querying order with ID: {id} and buyers_id: {user_id}")  
             order = Order.query.filter_by(id=id, buyers_id=user_id).first()
