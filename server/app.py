@@ -543,7 +543,7 @@ class LikedProducts(Resource):
         liked = [liked.to_dict() for liked in LikedProduct.query.all()]
 
         if not liked:
-            return {"message": "No liked products"}, 404
+            return [], 404
         
         return make_response(
             liked,
@@ -567,10 +567,15 @@ class LikedProducts(Resource):
         product = Product.query.get(product_id)
         if not product:
             return {'message': 'Product does not exist'}, 404
+
         
         buyer = User.query.get(buyers_id)
         if not buyer:
             return {'message': 'Buyer does not exist'}, 404
+        
+        exists = LikedProduct.query.filter(LikedProduct.product_id == product_id).first()
+        if exists:
+            return {'message': 'Item already on the wishlist'}, 400
         
         like = LikedProduct(product=product, buyer=buyer)
         db.session.add(like)
