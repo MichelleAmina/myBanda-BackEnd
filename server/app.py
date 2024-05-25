@@ -503,10 +503,8 @@ class OrderIndex(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
-    @jwt_required()
+    @jwt_required() 
     def patch(self, order_id):
-        # print(f"Received ID: {id}")  
-    def patch(self, id):
         # print(f"Received ID: {id}")  
         try:
             user_id = get_jwt_identity()
@@ -525,7 +523,7 @@ class OrderIndex(Resource):
             #     return {'message': 'New status not provided'}, 400
 
             print(f"Querying order with ID: {id} and buyers_id: {user_id}")  
-            order = Order.query.filter_by(id=id, buyers_id=user_id).first()
+            order = Order.query.filter_by(id=order_id).first()
             # print(f"Found order: {order}") 
             if not order:
                 return {'message': 'Order not found'}, 404
