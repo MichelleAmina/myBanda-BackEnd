@@ -296,12 +296,13 @@ class Orders(Resource):
             country = data.get('country')
             city = data.get('city')
             delivery_persons = data.get('delivery_persons')
+            created_at = datetime.now(timezone.utc)
 
             # if None in [total_price, status, delivery_fee, delivery_address]:
             #     return {'message': 'Required field(s) missing'}, 400
 
             # Getting the current time
-            created_at = datetime.now(timezone.utc)
+            
 
             order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
             db.session.add(order)
@@ -312,6 +313,25 @@ class Orders(Resource):
                 orderitem = OrderItem(order_id=order.id, product_id=item['id'], quantity=item['quantity'])
                 db.session.add(orderitem)
                 db.session.commit()
+
+            payment_method = data['payment_method']
+            if payment_method == 'mpesa':
+                
+                number = data['mpesa_contact']
+                amount = data['total_price']
+
+                data = {
+                "business_shortcode": "174379",
+                "passcode": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+                "amount": amount,
+                "phone_number": number,
+                "reference_code": "Banda",
+                "callback_url": "https://mybanda-backend-88l2.onrender.com/stk",
+                "description": "Reverse afterwards"
+                }
+                resp = mpesa_api.MpesaExpress.stk_push(**data)
+                # return resp,200
+
 
             return make_response(order.to_dict(), 201)
         
