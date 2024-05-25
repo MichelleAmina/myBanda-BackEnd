@@ -314,8 +314,7 @@ class Orders(Resource):
                 db.session.add(orderitem)
                 db.session.commit()
 
-            payment_method = data['payment_method']
-            if payment_method == 'mpesa':
+            if data['mpesa_contact']:
                 
                 number = data['mpesa_contact']
                 amount = data['total_price']
