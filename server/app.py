@@ -689,8 +689,8 @@ class LikedProducts(Resource):
             200
         )
     
+    @jwt_required()
     def post(self):
-
         data = request.get_json()
 
         product_id = data["product_id"]
