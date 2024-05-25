@@ -709,6 +709,10 @@ class LikedProducts(Resource):
         if not buyer:
             return {'message': 'Buyer does not exist'}, 404
         
+        exists = LikedProduct.query.filter(LikedProduct.buyers_id == buyers_id, LikedProduct.product_id == product_id).first()
+        if exists:
+            return {'message': 'Product already liked'}, 400
+        
         like = LikedProduct(product=product, buyer=buyer)
         db.session.add(like)
         db.session.commit()
