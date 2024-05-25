@@ -35,7 +35,7 @@ class SignUp(Resource):
             db.session.add(user)
             db.session.commit()
 
-            return {'message': 'User created successfully'}, 201
+            return {'message': 'User created successfully', 'user': user.to_dict()}, 201
         except Exception as e:
             db.session.rollback()
             return {'message': str(e)}, 500

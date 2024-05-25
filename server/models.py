@@ -4,12 +4,12 @@ import jwt
 
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
+    username = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     _password_hash = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
-    role = db.Column(db.String, nullable=False, default=False)   # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+    role = db.Column(db.String, nullable=False, default=False)   # 'seller', 'buyer', 'banda_admin', 'delivery'
 
     # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)
