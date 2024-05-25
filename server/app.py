@@ -295,7 +295,7 @@ class Orders(Resource):
             name = data.get('name')
             country = data.get('country')
             city = data.get('city')
-            delivery_persons = data.get('delivery_persons')
+            delivery_id = data.get('delivery_persons')
             created_at = datetime.now(timezone.utc)
 
             # if None in [total_price, status, delivery_fee, delivery_address]:
@@ -304,7 +304,7 @@ class Orders(Resource):
             # Getting the current time
             
 
-            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
+            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_id=delivery_id)
             db.session.add(order)
             db.session.commit()
 
