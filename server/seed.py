@@ -231,6 +231,8 @@ with app.app_context():
     db.session.add_all(likes)
     db.session.commit()
     
+    print ("Seeding Completed Succesfully")
+    
     
     
     # def create_super_admin():
