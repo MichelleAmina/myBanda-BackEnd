@@ -7,6 +7,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_cors import cross_origin
+
+
 
 class SignUp(Resource):
     def post(self):
@@ -55,99 +58,129 @@ class Login(Resource):
             access_token = create_access_token(identity=user.id)
             return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
         except Exception as e:
-            return {'message': str(e)}, 500
-        
-        
-# def create_super_admin():
-#     with app.app_context():
-#         username = 'BandaAdmin'
-#         email = 'superadmin@gmail.com'
-#         password = 'superadmin@gmail.com'
-        
-#         # Checking if the super admin already exists
-#         super_user = User.query.filter_by(email=email).first()
-#         if super_user:
-#             print('Super admin already exists.')
-#         else:
-#             # Creating the super admin if it doesn't exist
-#             super_admin = User(username=username, email=email, is_banda_admin=True)
-#             super_admin.password_hash = password
-#             db.session.add(super_admin)
-#             db.session.commit()
-#             print('Super admin created successfully.')
+            return {'message': str(e)}, 500    
 
-        
 
 class Admin(Resource):
-    def get(self):
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user.is_banda_admin:
-            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-        
-        return jsonify({"message" : "Welcome Banda Admin"})
-
-class UserFetchAdmin(Resource):
+    @cross_origin()
     @jwt_required()
     def get(self):
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user.is_banda_admin:
-            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-        
-        users = User.query.all()
-        serialized_users = [user.serialize() for user in users]
-        return jsonify(serialized_users)
+        try:
+            current_user_id = get_jwt_identity()
+            # Retrieve the User object based on the user ID
+            current_user = User.query.get(current_user_id)
+            
+            # Check if current_user is a valid User object and has admin privileges
+            if not isinstance(current_user, User) or not current_user.is_banda_admin:
+                return jsonify({'message': 'Unauthorized access'}), 403
+                
+            # Query all users from the database
+            all_users = User.query.all()
+            
+            # Serialize the users using SerializerMixin
+            serialized_users = [user.to_dict() for user in all_users]
+            
+            # Return the serialized list of users as JSON response
+            return jsonify(serialized_users), 200
+            
+        except Exception as e:
+            # Handle exceptions appropriately
+            return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
+      
 
 
-class UserDetaislAdmin(Resource):
+class UserDetailsAdmin(Resource):
     @jwt_required()
+    @cross_origin() 
     def get(self, user_id):
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user.is_banda_admin:
-            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-        
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
-        return jsonify(user.serialize())
+        try:
+            # Get current user's ID from JWT token
+            current_user_id = get_jwt_identity()
+            # Retrieve current user object
+            current_user = db.session.get(User, current_user_id)
+            
+            # Check if current user is valid and has admin privileges
+            if not current_user or not current_user.is_banda_admin:
+                return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+            
+            # Retrieve target user object by ID
+            target_user = db.session.get(User, user_id)
+            # Check if target user exists
+            if not target_user:
+                return jsonify({'message': 'User not found'}), 404
+            
+            # Return target user's details as JSON response
+            return jsonify(target_user.to_dict()), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
 
     @jwt_required()
+    @cross_origin() 
     def put(self, user_id):
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user.is_banda_admin:
-            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-        
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
-        
-        ###### I Will Come To Update user data based on request data
-        ##### Example: user.username = request.json['username']
-        # Then... db.session.commit()
-        return jsonify(message="User updated successfully")
+        try:
+            # Get current user's ID from JWT token
+            current_user_id = get_jwt_identity()
+            # Retrieve current user object
+            current_user = db.session.get(User, current_user_id)
+            
+            # Check if current user is valid and has admin privileges
+            if not current_user or not current_user.is_banda_admin:
+                return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+            
+            # Retrieve target user object by ID
+            target_user = db.session.get(User, user_id)
+            # Check if target user exists
+            if not target_user:
+                return jsonify({'message': 'User not found'}), 404
+            
+            data = request.json
+            if 'username' in data:
+                target_user.username = data['username']
+            if 'email' in data:
+                target_user.email = data['email']
+            if 'location' in data:
+                target_user.location = data['location']
+            if 'contact' in data:
+                target_user.contact = data['contact']
+            # Add more fields as necessary
+            if 'role' in data:
+                target_user.role = data['role']
+            if 'is_banda_admin' in data:
+                target_user.is_banda_admin = data['is_banda_admin']
+            if 'is_banda_delivery' in data:
+                target_user.is_banda_delivery = data['is_banda_delivery']
+
+            # Commit changes to the database
+            db.session.commit()
+            return jsonify({'message': 'User updated successfully'}), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
 
     @jwt_required()
+    @cross_origin() 
     def delete(self, user_id):
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user.is_banda_admin:
-            return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-        
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
-        
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify(message="User deleted successfully")
+        try:
+            # Get current user's ID from JWT token
+            current_user_id = get_jwt_identity()
+            # Retrieve current user object
+            current_user = db.session.get(User, current_user_id)
+            
+            # Check if current user is valid and has admin privileges
+            if not current_user or not current_user.is_banda_admin:
+                return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+            
+            # Retrieve target user object by ID
+            target_user = db.session.get(User, user_id)
+            # Check if target user exists
+            if not target_user:
+                return jsonify({'message': 'User not found'}), 404
+            
+            # Delete target user from the database
+            db.session.delete(target_user)
+            db.session.commit()
+            return jsonify({'message': 'User deleted successfully'}), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
 
 
 
@@ -784,9 +817,8 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
-api.add_resource(Admin, '/admin')
-api.add_resource(UserFetchAdmin, '/users')
-api.add_resource(UserDetaislAdmin, '/users/<int:user_id>')
+api.add_resource(Admin, '/admin/users')
+api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
 
 
 
