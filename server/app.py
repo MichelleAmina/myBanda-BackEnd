@@ -7,6 +7,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_cors import cross_origin
+
+
 
 class SignUp(Resource):
     def post(self):
@@ -55,8 +58,106 @@ class Login(Resource):
             access_token = create_access_token(identity=user.id)
             return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
         except Exception as e:
-            return {'message': str(e)}, 500
-        
+            return {'message': str(e)}, 500    
+
+
+class Admin(Resource):
+    @cross_origin()
+    @jwt_required()
+    def get(self):
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = User.query.get(current_user_id)
+            
+            if not isinstance(current_user, User) or not current_user.is_banda_admin:
+                return jsonify({'message': 'Unauthorized access'}), 403
+                
+            all_users = User.query.all()
+            
+            serialized_users = [user.to_dict() for user in all_users]
+            
+            return jsonify(serialized_users), 200
+            
+        except Exception as e:
+            return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
+      
+
+
+class UserDetailsAdmin(Resource):
+    @jwt_required()
+    @cross_origin() 
+    def get(self, user_id):
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = db.session.get(User, current_user_id)
+            
+            if not current_user or not current_user.is_banda_admin:
+                return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+            
+            target_user = db.session.get(User, user_id)
+            if not target_user:
+                return jsonify({'message': 'User not found'}), 404
+            
+            return jsonify(target_user.to_dict()), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
+
+    @jwt_required()
+    @cross_origin() 
+    def put(self, user_id):
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = db.session.get(User, current_user_id)
+            
+            if not current_user or not current_user.is_banda_admin:
+                return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+            
+            target_user = db.session.get(User, user_id)
+            if not target_user:
+                return jsonify({'message': 'User not found'}), 404
+            
+            data = request.json
+            if 'username' in data:
+                target_user.username = data['username']
+            if 'email' in data:
+                target_user.email = data['email']
+            if 'location' in data:
+                target_user.location = data['location']
+            if 'contact' in data:
+                target_user.contact = data['contact']
+            if 'role' in data:
+                target_user.role = data['role']
+            if 'is_banda_admin' in data:
+                target_user.is_banda_admin = data['is_banda_admin']
+            if 'is_banda_delivery' in data:
+                target_user.is_banda_delivery = data['is_banda_delivery']
+
+            db.session.commit()
+            return jsonify({'message': 'User updated successfully'}), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
+
+    @jwt_required()
+    @cross_origin() 
+    def delete(self, user_id):
+        try:
+            current_user_id = get_jwt_identity()
+            current_user = db.session.get(User, current_user_id)
+            
+            if not current_user or not current_user.is_banda_admin:
+                return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
+            
+            target_user = db.session.get(User, user_id)
+            if not target_user:
+                return jsonify({'message': 'User not found'}), 404
+            
+            db.session.delete(target_user)
+            db.session.commit()
+            return jsonify({'message': 'User deleted successfully'}), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
+
+
 
 class Users(Resource):
     def get(self):
@@ -389,8 +490,8 @@ class OrderItems(Resource):
             db.session.rollback()
             return {"message": str(e)}, 500
         
-
-  
+        
+        
 class OrderIndex(Resource):
     @jwt_required()
     def get(self, order_id):
@@ -405,8 +506,12 @@ class OrderIndex(Resource):
     @jwt_required()
     def patch(self, order_id):
         # print(f"Received ID: {id}")  
+    def patch(self, id):
+        # print(f"Received ID: {id}")  
         try:
             user_id = get_jwt_identity()
+            # print(f"User ID from JWT: {user_id}") 
+
             # print(f"User ID from JWT: {user_id}") 
 
             if not user_id:
@@ -419,8 +524,8 @@ class OrderIndex(Resource):
             # if not new_status:
             #     return {'message': 'New status not provided'}, 400
 
-            print(f"Querying order with ID: {order_id} and buyers_id: {user_id}")  
-            order = Order.query.filter_by(id=order_id).first()
+            print(f"Querying order with ID: {id} and buyers_id: {user_id}")  
+            order = Order.query.filter_by(id=id, buyers_id=user_id).first()
             # print(f"Found order: {order}") 
             if not order:
                 return {'message': 'Order not found'}, 404
@@ -433,8 +538,6 @@ class OrderIndex(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': str(e)}, 500
-
-
 
 
 class Reviews(Resource):
@@ -723,10 +826,12 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
-api.add_resource(Prompt, '/prompt')
+api.add_resource(Admin, '/admin/users')
+api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
 
 
 
 
 if __name__ == '__main__':
+    # create_super_admin()
     app.run(port=5555, debug=True)
