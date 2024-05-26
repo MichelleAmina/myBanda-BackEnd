@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password, photos, reqparse, os
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -8,6 +8,10 @@ from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_cors import cross_origin
+# from flask_uploads import UploadNotAllowed
+from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
+
 
 
 
@@ -303,7 +307,125 @@ class Images(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-    
+ 
+
+# class UploadImage(Resource):
+#     @jwt_required()
+#     def post(self):
+#         buyer_id = get_jwt_identity()  
+#         if 'image' not in request.files:
+#             return {'error': 'No file part'}, 400
+
+#         file = request.files['image']
+#         if file.filename == '':
+#             return {'error': 'No selected file'}, 400
+
+#         if file and self.allowed_file(file.filename):
+#             filename = secure_filename(file.filename)
+#             file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
+#             file.save(file_path)
+#             image_url = photos.url(filename)
+
+#             product_image = ProductsImages(image_url=image_url, buyer_id=buyer_id)
+#             db.session.add(product_image)
+#             db.session.commit()
+
+#             return {'message': 'Image uploaded successfully', 'image_url': image_url}, 201
+#         else:
+#             return {'error': 'File not allowed'}, 400
+#     @staticmethod
+#     def allowed_file(filename):
+#         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+#         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# class RetrieveImage(Resource):
+#     def get(self, image_id):
+#         product_image = ProductsImages.query.get(image_id)
+#         if product_image:
+#             return {'image_url': product_image.image_url}, 200
+#         else:
+#             return {'error': 'Image not found'}, 404
+
+
+
+# Testing the routes use these
+# Body (form-data):
+# type: logo or banner
+# image: (choose a file)
+
+class UploadShopImage(Resource):
+    @jwt_required()
+    def post(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user or not user.shop:
+            return jsonify({"error": "User does not own a shop"}), 400
+
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+
+        image = request.files['image']
+        if image.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+        
+        filename = secure_filename(image.filename)
+        image.save(os.path.join(app.config['UPLOADS_DEFAULT_DEST'], filename))
+        image_url = photos.url(filename)
+
+        if 'type' not in request.form:
+            return jsonify({"error": "Image type not specified"}), 400
+
+        image_type = request.form['type']
+        if image_type == 'logo':
+            user.shop.logo_image_url = image_url
+        elif image_type == 'banner':
+            user.shop.banner_image_url = image_url
+        else:
+            return jsonify({"error": "Invalid image type specified"}), 400
+
+        db.session.commit()
+        return jsonify({"message": "Image uploaded successfully", "image_url": image_url}), 200
+
+
+
+# Body (form-data):
+# product_id: <PRODUCT_ID>
+# image: (choose a file)
+class UploadProductImage(Resource):
+    @jwt_required()
+    def post(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if not user or not user.shop:
+            return jsonify({"error": "User does not own a shop"}), 400
+
+        if 'image' not in request.files or 'product_id' not in request.form:
+            return jsonify({"error": "No image file or product_id provided"}), 400
+
+        image = request.files['image']
+        if image.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        product_id = request.form['product_id']
+        product = Product.query.get(product_id)
+
+        if not product or product.shop_id != user.shop.id:
+            return jsonify({"error": "Product not found or does not belong to the shop"}), 400
+
+        filename = secure_filename(image.filename)
+        image.save(os.path.join(app.config['UPLOADS_DEFAULT_DEST'], filename))
+        image_url = photos.url(filename)
+
+        product_image = ProductsImages(image_url=image_url, product=product)
+        db.session.add(product_image)
+        db.session.commit()
+
+        return jsonify({"message": "Image uploaded successfully", "image_url": image_url}), 200
+
+  
 class ShopIndex(Resource):
     def get(self, id):
 
@@ -792,8 +914,11 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
+api.add_resource(UploadImage, '/upload_image')
+api.add_resource(RetrieveImage, '/get_image_urls/<int:image_id>')
 # api.add_resource(Admin, '/admin/users')
 # api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
+
 
 
 
