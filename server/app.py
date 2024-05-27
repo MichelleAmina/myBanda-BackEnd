@@ -13,10 +13,6 @@ from flask_cors import cross_origin
 # from werkzeug.exceptions import BadRequest
 # from werkzeug.utils import secure_filename
 
-import cloudinary.uploader
-import cloudinary
-import cloudinary.api
-
 
 
 
@@ -168,20 +164,16 @@ class Products(Resource):
     
     @jwt_required()
     def post(self):
-        seller_id = get_jwt_identity()
-
-        # data = request.form()
-        name = request.form['productName']
-        description = request.form['description']
-        price = request.form['price']
-        image_url = request.form['imageUrls']
-        quantity_available = request.form['quantity']
-        category = request.form['category']
-        # shop_id = data['shop_id']
-        # tag = data['get']
-        # specs = data.get('sizes')
-
-        shop_id = User.query.filter(User.id == seller_id)['shop']['id']
+        data = request.get_json()
+        name = data.get('name')
+        description = data.get('description')
+        price = data.get('price')
+        image_url = data.get('image_url')
+        quantity_available = data.get('quantity_available')
+        category = data.get('category')
+        shop_id = data.get('shop_id')
+        tag = data.get('get')
+        # specs = data.get('specs')
 
 
         product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
@@ -292,11 +284,15 @@ class Images(Resource):
 
 
 
-
 # class ShopResource(Resource):
 #     @jwt_required()
 #     def post(self):
 #         seller_id = get_jwt_identity()
+
+        # Verify that seller_id exists in the user table
+        user = User.query.get(seller_id)
+        if not user:
+            return {'error': 'Invalid seller ID'}, 400
 
 #         # Checking if the user already has a shop
 #         existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
@@ -314,11 +310,6 @@ class Images(Resource):
 #         description = data.get('description')
 #         location = data.get('location')
 #         contact = data.get('contact')
-
-#         # print(f"Name: {name}")
-#         # print(f"Description: {description}")
-#         # print(f"Location: {location}")
-#         # print(f"Contact: {contact}")
 
 #         if not all([name, description, location, contact]):
 #             return {'error': 'Missing required fields'}, 400
@@ -410,7 +401,6 @@ class Images(Resource):
 #     def allowed_file(filename):
 #         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 #         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 
 
