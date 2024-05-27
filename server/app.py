@@ -13,7 +13,6 @@ from flask_cors import cross_origin
 # from werkzeug.exceptions import BadRequest
 # from werkzeug.utils import secure_filename
 
-import cloudinary.uploader
 import cloudinary
 import cloudinary.api
 
@@ -166,42 +165,91 @@ class Products(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
     
+    # @jwt_required()
+    # def post(self):
+    #     seller_id = get_jwt_identity()
+
+    #     data = request.form
+    #     name = data['productName']
+    #     description = data['description']
+    #     price = data['price']
+    #     image_url = data['imageUrls']
+    #     quantity_available = data['quantity']
+    #     category = data['category']
+    #     # shop_id = data['shop_id']
+    #     # tag = data['get']
+    #     # specs = data.get('sizes')
+
+    #     shop_id = User.query.filter(User.id == seller_id)['shop']['id']
+
+
+    #     product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
+    #     db.session.add(product)
+    #     db.session.commit()
+
+    #     createdImage = ProductsImages(product=product)
+    #     createdImage.upload_image(image_url)
+
+    #     db.session.add(createdImage)
+    #     db.session.commit()
+    #     # for spec in specs:
+    #     #     specification = Specification(spec=spec, product=product)
+    #     #     db.session.add(specification)
+    #     #     db.session.commit()
+
+    #     return make_response(
+    #         product.to_dict(),
+    #         201
+    #     )
+    
     @jwt_required()
     def post(self):
-        seller_id = get_jwt_identity()
+        try:
+            seller_id = get_jwt_identity()
 
-        data = request.form
-        name = data['productName']
-        description = data['description']
-        price = data['price']
-        image_url = data['imageUrls']
-        quantity_available = data['quantity']
-        category = data['category']
-        # shop_id = data['shop_id']
-        # tag = data['get']
-        # specs = data.get('sizes')
+            data = request.form
+            name = data.get('productName')
+            description = data.get('description')
+            price = data.get('price')
+            quantity_available = data.get('quantity')
+            category = data.get('category')
 
-        shop_id = User.query.filter(User.id == seller_id)['shop']['id']
+            user = User.query.filter_by(id=seller_id).first()
+            if not user or not user.shop:
+                return {"message": "User does not have a shop"}, 400
 
+            shop_id = user.shop.id
 
-        product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id) 
-        db.session.add(product)
-        db.session.commit()
+            product = Product(
+                name=name,
+                description=description,
+                price=price,
+                quantity_available=quantity_available,
+                category=category,
+                shop_id=shop_id
+            )
 
-        createdImage = ProductsImages(product=product)
-        createdImage.upload_image(image_url)
+            db.session.add(product)
+            db.session.commit()
 
-        db.session.add(createdImage)
-        db.session.commit()
-        # for spec in specs:
-        #     specification = Specification(spec=spec, product=product)
-        #     db.session.add(specification)
-        #     db.session.commit()
+            if 'imageUrls' in request.files:
+                image_file = request.files['imageUrls']
+                image = ProductsImages(product_id=product.id)
+                image.upload_image(image_file)
+                db.session.add(image)
+                db.session.commit()
 
-        return make_response(
-            product.to_dict(),
-            201
-        )
+            response_data = {
+                "message": "Product added successfully",
+                "product": product.to_dict()
+            }
+
+            return make_response(response_data, 201)
+        
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
+
     
 class Images(Resource):
     def post(self):
@@ -437,23 +485,73 @@ class Shops(Resource):
             200
         )
 
+    # def post(self):
+    #     try:
+    #         data = request.get_json()
+
+    #         name = data.get('name')
+    #         description = data.get('description')
+    #         logo_image_url = data.get('logo_image_url')
+    #         banner_image_url = data.get('banner_image_url')
+    #         seller_id = data.get('seller_id')
+    #         contact = data.get('contact')
+    #         location = data.get('location')
+
+    #         if not name or not seller_id:
+    #             return {"message": "name and seller_id are required fields!"}, 400
+            
+
+    #         shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id, contact=contact, location=location)
+    #         db.session.add(shop)
+    #         db.session.commit()
+
+    #         seller = User.query.filter(User.id == seller_id).first()
+    #         seller.is_new_seller = False
+    #         db.session.commit()
+
+    #         return make_response(
+    #             shop.to_dict(),
+    #             200
+    #         )
+        
+    #     except Exception as e:
+    #         db.session.rollback()
+    #         return {"message": str(e)}, 500
+    
+    
+    @jwt_required()
     def post(self):
         try:
-            data = request.get_json()
+            seller_id = get_jwt_identity()
 
-            name = data.get('name')
-            description = data.get('description')
-            logo_image_url = data.get('logo_image_url')
-            banner_image_url = data.get('banner_image_url')
-            seller_id = data.get('seller_id')
-            contact = data.get('contact')
-            location = data.get('location')
+            name = request.form.get('name')
+            description = request.form.get('description')
+            contact = request.form.get('contact')
+            location = request.form.get('location')
 
             if not name or not seller_id:
                 return {"message": "name and seller_id are required fields!"}, 400
-            
 
-            shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id, contact=contact, location=location)
+            banner_image_url = None
+            logo_image_url = None
+
+            if 'banner_image' in request.files:
+                banner_file = request.files['banner_image']
+                banner_image_url = cloudinary.uploader.upload(banner_file)['secure_url']
+
+            if 'logo_image' in request.files:
+                logo_file = request.files['logo_image']
+                logo_image_url = cloudinary.uploader.upload(logo_file)['secure_url']
+
+            shop = Shop(
+                name=name,
+                description=description,
+                banner_image_url=banner_image_url,
+                logo_image_url=logo_image_url,
+                seller_id=seller_id,
+                contact=contact,
+                location=location
+            )
             db.session.add(shop)
             db.session.commit()
 
@@ -461,10 +559,7 @@ class Shops(Resource):
             seller.is_new_seller = False
             db.session.commit()
 
-            return make_response(
-                shop.to_dict(),
-                200
-            )
+            return make_response(shop.to_dict(), 201)
         
         except Exception as e:
             db.session.rollback()

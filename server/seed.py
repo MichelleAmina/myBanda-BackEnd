@@ -21,11 +21,11 @@ with app.app_context():
     
     print('Seeding user...')
     # sellers
-    rob = User(username="robins", email="rob@gmail.com", location="Nairobi", contact="12345" ,role="seller")
+    rob = User(username="robins", email="rob@gmail.com", location="Nairobi", contact="12345" ,role="seller", is_new_seller=False)
     rob.password_hash = "seller"
-    ndanu = User(username="ndanu", email="ndanu@gmail.com", location="Kisumu", contact="12345", role="seller")
+    ndanu = User(username="ndanu", email="ndanu@gmail.com", location="Kisumu", contact="12345", role="seller", is_new_seller=False)
     ndanu.password_hash = "seller2"
-    john = User(username="john", email="john@gmail.com", location="Nakuru", contact="12345", role="seller")
+    john = User(username="john", email="john@gmail.com", location="Nakuru", contact="12345", role="seller", is_new_seller=False)
     john.password_hash = "seller3"
 
     # buyers
