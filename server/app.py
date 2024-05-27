@@ -280,17 +280,21 @@ class Images(Resource):
 
 
 
-
 # class ShopResource(Resource):
 #     @jwt_required()
 #     def post(self):
 #         seller_id = get_jwt_identity()
 
-#         # Checking if the user already has a shop
-#         existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
-#         if existing_shop:
-#             # Updating existing shop details if it already exists
-#             return self.update_shop(existing_shop)
+        # Verify that seller_id exists in the user table
+        user = User.query.get(seller_id)
+        if not user:
+            return {'error': 'Invalid seller ID'}, 400
+
+        # Checking if the user already has a shop
+        existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if existing_shop:
+            # Updating existing shop details if it already exists
+            return self.update_shop(existing_shop)
 
 #         # Creating a new shop if the user doesn't have one
 #         return self.create_shop(seller_id)
@@ -298,15 +302,10 @@ class Images(Resource):
 #     def create_shop(self, seller_id):
 #         data = request.form
 
-#         name = data.get('name')
-#         description = data.get('description')
-#         location = data.get('location')
-#         contact = data.get('contact')
-
-#         # print(f"Name: {name}")
-#         # print(f"Description: {description}")
-#         # print(f"Location: {location}")
-#         # print(f"Contact: {contact}")
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
 
 #         if not all([name, description, location, contact]):
 #             return {'error': 'Missing required fields'}, 400
@@ -398,7 +397,6 @@ class Images(Resource):
 #     def allowed_file(filename):
 #         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 #         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 
 
