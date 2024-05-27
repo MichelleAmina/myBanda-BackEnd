@@ -16,7 +16,7 @@ from flask_mpesa import MpesaAPI
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask_mail import Mail
 from flask_mail import Message
-from flask_uploads import configure_uploads, IMAGES, UploadSet
+# from flask_uploads import configure_uploads, IMAGES, UploadSet
 
 
 # from jwt.exceptions import DecodeErrors
@@ -25,9 +25,9 @@ from dotenv import load_dotenv
 load_dotenv()  
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get('DATABASE_URI')
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://banda_db2_user:8EGlg1MH9V6T2x6WJBQhALp5CY6VvSLA@dpg-cp461r0cmk4c73eerik0-a.frankfurt-postgres.render.com/banda_db2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://banda_db2_user:8EGlg1MH9V6T2x6WJBQhALp5CY6VvSLA@dpg-cp461r0cmk4c73eerik0-a.frankfurt-postgres.render.com/banda_db2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'hbb36bh6kby45][mg]'
 SECRET_KEY = app.config['SECRET_KEY'] = 'hbb36bh6kby45][mg]' 
@@ -67,19 +67,19 @@ Session(app)
 
 
 # Initializing UploadSet
-photos = UploadSet('photos', IMAGES)
+# photos = UploadSet('photos', IMAGES)
 
-# Defining the upload folder
-# app.config['UPLOAD_FOLDER'] = './server/uploads' 
-app.config['UPLOAD_FOLDER'] = '../server/uploads' 
-app.config['UPLOADED_PHOTOS_DEST'] = app.config['UPLOAD_FOLDER']
+# # Defining the upload folder
+# # app.config['UPLOAD_FOLDER'] = './server/uploads' 
+# app.config['UPLOAD_FOLDER'] = '../server/uploads' 
+# app.config['UPLOADED_PHOTOS_DEST'] = app.config['UPLOAD_FOLDER']
 
-# Creating the upload folder if it doesn't exist
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-    print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' created successfully.")
-else:
-    print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' already exists.")
+# # Creating the upload folder if it doesn't exist
+# if not os.path.exists(app.config['UPLOAD_FOLDER']):
+#     os.makedirs(app.config['UPLOAD_FOLDER'])
+#     print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' created successfully.")
+# else:
+#     print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' already exists.")
 
-# Configuring uploads
-configure_uploads(app, photos)
+# # Configuring uploads
+# configure_uploads(app, photos)

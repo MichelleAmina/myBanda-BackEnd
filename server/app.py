@@ -9,8 +9,8 @@ from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_cors import cross_origin
 # from flask_uploads import UploadNotAllowed
-from werkzeug.exceptions import BadRequest
-from werkzeug.utils import secure_filename
+# from werkzeug.exceptions import BadRequest
+# from werkzeug.utils import secure_filename
 
 
 
@@ -216,187 +216,187 @@ class Images(Resource):
 
 
 
-class CreateProduct(Resource):
-    @jwt_required()
-    def post(self):
-        seller_id = get_jwt_identity()
+# class CreateProduct(Resource):
+#     @jwt_required()
+#     def post(self):
+#         seller_id = get_jwt_identity()
 
-        # Retrieve shop for the seller
-        shop = Shop.query.filter_by(seller_id=seller_id).first()
-        if not shop:
-            return {'error': 'No shop found for the seller'}, 404
+#         # Retrieve shop for the seller
+#         shop = Shop.query.filter_by(seller_id=seller_id).first()
+#         if not shop:
+#             return {'error': 'No shop found for the seller'}, 404
 
-        data = request.form
+#         data = request.form
 
-        name = data.get('name')
-        description = data.get('description')
-        price = data.get('price')
-        quantity_available = data.get('quantity_available')
-        category = data.get('category')
-        tag = data.get('tag')
+#         name = data.get('name')
+#         description = data.get('description')
+#         price = data.get('price')
+#         quantity_available = data.get('quantity_available')
+#         category = data.get('category')
+#         tag = data.get('tag')
 
-        if not all([name, description, price, quantity_available, category]):
-            return {'error': 'Missing required fields'}, 400
+#         if not all([name, description, price, quantity_available, category]):
+#             return {'error': 'Missing required fields'}, 400
 
-        product = Product(
-            name=name,
-            description=description,
-            price=float(price),
-            quantity_available=int(quantity_available),
-            category=category,
-            tag=tag,
-            shop_id=shop.id
-        )
+#         product = Product(
+#             name=name,
+#             description=description,
+#             price=float(price),
+#             quantity_available=int(quantity_available),
+#             category=category,
+#             tag=tag,
+#             shop_id=shop.id
+#         )
 
-        db.session.add(product)
-        db.session.commit()
+#         db.session.add(product)
+#         db.session.commit()
 
-        # Handling image upload
-        if 'images' not in request.files:
-            return {'error': 'No images uploaded'}, 400
+#         # Handling image upload
+#         if 'images' not in request.files:
+#             return {'error': 'No images uploaded'}, 400
 
-        files = request.files.getlist('images')
+#         files = request.files.getlist('images')
 
-        for file in files:
-            if file and self.allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
-                file.save(file_path)
-                image_url = photos.url(filename)
+#         for file in files:
+#             if file and self.allowed_file(file.filename):
+#                 filename = secure_filename(file.filename)
+#                 file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
+#                 file.save(file_path)
+#                 image_url = photos.url(filename)
 
-                product_image = ProductsImages(image_url=image_url, product_id=product.id)
-                db.session.add(product_image)
+#                 product_image = ProductsImages(image_url=image_url, product_id=product.id)
+#                 db.session.add(product_image)
 
-        db.session.commit()
+#         db.session.commit()
 
-        return {'message': 'Product created and images uploaded successfully', 'product_id': product.id}, 201
+#         return {'message': 'Product created and images uploaded successfully', 'product_id': product.id}, 201
 
-    @staticmethod
-    def allowed_file(filename):
-        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
+    # @staticmethod
+    # def allowed_file(filename):
+    #     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    #     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 
-class ShopResource(Resource):
-    @jwt_required()
-    def post(self):
-        seller_id = get_jwt_identity()
 
-        # Checking if the user already has a shop
-        existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
-        if existing_shop:
-            # Updating existing shop details if it already exists
-            return self.update_shop(existing_shop)
 
-        # Creating a new shop if the user doesn't have one
-        return self.create_shop(seller_id)
+# class ShopResource(Resource):
+#     @jwt_required()
+#     def post(self):
+#         seller_id = get_jwt_identity()
 
-    def create_shop(self, seller_id):
-        data = request.form
+#         # Checking if the user already has a shop
+#         existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
+#         if existing_shop:
+#             # Updating existing shop details if it already exists
+#             return self.update_shop(existing_shop)
 
-        name = data.get('name')
-        description = data.get('description')
-        location = data.get('location')
-        contact = data.get('contact')
+#         # Creating a new shop if the user doesn't have one
+#         return self.create_shop(seller_id)
 
-        # print(f"Name: {name}")
-        # print(f"Description: {description}")
-        # print(f"Location: {location}")
-        # print(f"Contact: {contact}")
+#     def create_shop(self, seller_id):
+#         data = request.form
 
-        if not all([name, description, location, contact]):
-            return {'error': 'Missing required fields'}, 400
+#         name = data.get('name')
+#         description = data.get('description')
+#         location = data.get('location')
+#         contact = data.get('contact')
 
-        # Handling logo image upload
-        if 'logo_image' not in request.files:
-            return {'error': 'No logo image uploaded'}, 400
+#         # print(f"Name: {name}")
+#         # print(f"Description: {description}")
+#         # print(f"Location: {location}")
+#         # print(f"Contact: {contact}")
 
-        logo_file = request.files['logo_image']
-        if not logo_file or not self.allowed_file(logo_file.filename):
-            return {'error': 'Invalid logo image file'}, 400
+#         if not all([name, description, location, contact]):
+#             return {'error': 'Missing required fields'}, 400
 
-        logo_filename = secure_filename(logo_file.filename)
-        logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
-        logo_file.save(logo_file_path)
-        logo_image_url = photos.url(logo_filename)
+#         # Handling logo image upload
+#         if 'logo_image' not in request.files:
+#             return {'error': 'No logo image uploaded'}, 400
 
-        # Handling banner image upload
-        if 'banner_image' not in request.files:
-            return {'error': 'No banner image uploaded'}, 400
+#         logo_file = request.files['logo_image']
+#         if not logo_file or not self.allowed_file(logo_file.filename):
+#             return {'error': 'Invalid logo image file'}, 400
 
-        banner_file = request.files['banner_image']
-        if not banner_file or not self.allowed_file(banner_file.filename):
-            return {'error': 'Invalid banner image file'}, 400
+#         logo_filename = secure_filename(logo_file.filename)
+#         logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+#         logo_file.save(logo_file_path)
+#         logo_image_url = photos.url(logo_filename)
 
-        banner_filename = secure_filename(banner_file.filename)
-        banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
-        banner_file.save(banner_file_path)
-        banner_image_url = photos.url(banner_filename)
+#         # Handling banner image upload
+#         if 'banner_image' not in request.files:
+#             return {'error': 'No banner image uploaded'}, 400
 
-        shop = Shop(
-            name=name,
-            description=description,
-            location=location,
-            contact=contact,
-            logo_image_url=logo_image_url,
-            banner_image_url=banner_image_url,
-            seller_id=seller_id
-        )
+#         banner_file = request.files['banner_image']
+#         if not banner_file or not self.allowed_file(banner_file.filename):
+#             return {'error': 'Invalid banner image file'}, 400
 
-        db.session.add(shop)
-        db.session.commit()
+#         banner_filename = secure_filename(banner_file.filename)
+#         banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+#         banner_file.save(banner_file_path)
+#         banner_image_url = photos.url(banner_filename)
 
-        return {'message': 'Shop created successfully', 'shop_id': shop.id}, 201
+#         shop = Shop(
+#             name=name,
+#             description=description,
+#             location=location,
+#             contact=contact,
+#             logo_image_url=logo_image_url,
+#             banner_image_url=banner_image_url,
+#             seller_id=seller_id
+#         )
 
-    def update_shop(self, shop):
-        data = request.form
+#         db.session.add(shop)
+#         db.session.commit()
 
-        name = data.get('name')
-        description = data.get('description')
-        location = data.get('location')
-        contact = data.get('contact')
+#         return {'message': 'Shop created successfully', 'shop_id': shop.id}, 201
 
-        # Updating the shop details if provided
-        if name:
-            shop.name = name
-        if description:
-            shop.description = description
-        if location:
-            shop.location = location
-        if contact:
-            shop.contact = contact
+#     def update_shop(self, shop):
+#         data = request.form
 
-        # Handling logo image upload if provided
-        if 'logo_image' in request.files:
-            logo_file = request.files['logo_image']
-            if logo_file and self.allowed_file(logo_file.filename):
-                logo_filename = secure_filename(logo_file.filename)
-                logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
-                logo_file.save(logo_file_path)
-                logo_image_url = photos.url(logo_filename)
-                shop.logo_image_url = logo_image_url
+#         name = data.get('name')
+#         description = data.get('description')
+#         location = data.get('location')
+#         contact = data.get('contact')
 
-        # Handling banner image upload if provided
-        if 'banner_image' in request.files:
-            banner_file = request.files['banner_image']
-            if banner_file and self.allowed_file(banner_file.filename):
-                banner_filename = secure_filename(banner_file.filename)
-                banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
-                banner_file.save(banner_file_path)
-                banner_image_url = photos.url(banner_filename)
-                shop.banner_image_url = banner_image_url
+#         # Updating the shop details if provided
+#         if name:
+#             shop.name = name
+#         if description:
+#             shop.description = description
+#         if location:
+#             shop.location = location
+#         if contact:
+#             shop.contact = contact
 
-        db.session.commit()
+#         # Handling logo image upload if provided
+#         if 'logo_image' in request.files:
+#             logo_file = request.files['logo_image']
+#             if logo_file and self.allowed_file(logo_file.filename):
+#                 logo_filename = secure_filename(logo_file.filename)
+#                 logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+#                 logo_file.save(logo_file_path)
+#                 logo_image_url = photos.url(logo_filename)
+#                 shop.logo_image_url = logo_image_url
 
-        return {'message': 'Shop updated successfully'}, 200
+#         # Handling banner image upload if provided
+#         if 'banner_image' in request.files:
+#             banner_file = request.files['banner_image']
+#             if banner_file and self.allowed_file(banner_file.filename):
+#                 banner_filename = secure_filename(banner_file.filename)
+#                 banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+#                 banner_file.save(banner_file_path)
+#                 banner_image_url = photos.url(banner_filename)
+#                 shop.banner_image_url = banner_image_url
 
-    @staticmethod
-    def allowed_file(filename):
-        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+#         db.session.commit()
+
+#         return {'message': 'Shop updated successfully'}, 200
+
+#     @staticmethod
+#     def allowed_file(filename):
+#         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+#         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 
@@ -935,8 +935,8 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
-api.add_resource(CreateProduct, '/upload_image/product')
-api.add_resource(ShopResource, '/shop/uploads/images')
+# api.add_resource(CreateProduct, '/upload_image/product')
+# api.add_resource(ShopResource, '/shop/uploads/images')
 # api.add_resource(Admin, '/admin/users')
 # api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
 
