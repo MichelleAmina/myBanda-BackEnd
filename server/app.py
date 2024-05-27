@@ -493,7 +493,7 @@ class Orders(Resource):
 
             total_price = data.get('total_price')
             status = data.get('status')
-            user_id_posted = data.get('user_id')
+            # user_id_posted = data.get('user_id')
             delivery_fee = data.get('delivery_fee')
             delivery_address = data.get('delivery_address')
             contact = data.get('contact')
