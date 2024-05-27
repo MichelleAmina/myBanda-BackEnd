@@ -2,7 +2,7 @@ from flask import Flask, request, session, jsonify, make_response, url_for
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource, reqparse
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -16,6 +16,9 @@ from flask_mpesa import MpesaAPI
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask_mail import Mail
 from flask_mail import Message
+from flask_uploads import configure_uploads, IMAGES, UploadSet
+
+
 # from jwt.exceptions import DecodeErrors
 
 from dotenv import load_dotenv
@@ -50,6 +53,7 @@ metadata = MetaData(naming_convention={
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
 })
 
+
 db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)
 db.init_app(app)
@@ -60,3 +64,22 @@ mpesa_api = MpesaAPI(app)
 mail = Mail(app)
 CORS(app)
 Session(app)
+
+
+# Initializing UploadSet
+photos = UploadSet('photos', IMAGES)
+
+# Defining the upload folder
+# app.config['UPLOAD_FOLDER'] = './server/uploads' 
+app.config['UPLOAD_FOLDER'] = '../server/uploads' 
+app.config['UPLOADED_PHOTOS_DEST'] = app.config['UPLOAD_FOLDER']
+
+# Creating the upload folder if it doesn't exist
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+    print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' created successfully.")
+else:
+    print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' already exists.")
+
+# Configuring uploads
+configure_uploads(app, photos)

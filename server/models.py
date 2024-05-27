@@ -9,7 +9,7 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
-    role = db.Column(db.String, nullable=False, default=False)   # 'seller/shop', 'client/customer', 'banda_admin', 'delivery'
+    role = db.Column(db.String, nullable=False, default=False)   # 'seller', 'buyer', 'banda_admin', 'delivery'
 
     # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)

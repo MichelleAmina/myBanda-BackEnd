@@ -1,12 +1,19 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password, photos, reqparse, os
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_cors import cross_origin
+# from flask_uploads import UploadNotAllowed
+from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
+
+
+
 
 class SignUp(Resource):
     def post(self):
@@ -35,7 +42,7 @@ class SignUp(Resource):
             db.session.add(user)
             db.session.commit()
 
-            return {'message': 'User created successfully'}, 201
+            return {'message': 'User created successfully', 'user': user.to_dict()}, 201
         except Exception as e:
             db.session.rollback()
             return {'message': str(e)}, 500
@@ -55,8 +62,8 @@ class Login(Resource):
             access_token = create_access_token(identity=user.id)
             return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
         except Exception as e:
-            return {'message': str(e)}, 500
-        
+            return {'message': str(e)}, 500    
+
 
 class Users(Resource):
     def get(self):
@@ -202,7 +209,196 @@ class Images(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-    
+ 
+
+
+
+class CreateProduct(Resource):
+    @jwt_required()
+    def post(self):
+        seller_id = get_jwt_identity()
+
+        # Retrieve shop for the seller
+        shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if not shop:
+            return {'error': 'No shop found for the seller'}, 404
+
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        price = data.get('price')
+        quantity_available = data.get('quantity_available')
+        category = data.get('category')
+        tag = data.get('tag')
+
+        if not all([name, description, price, quantity_available, category]):
+            return {'error': 'Missing required fields'}, 400
+
+        product = Product(
+            name=name,
+            description=description,
+            price=float(price),
+            quantity_available=int(quantity_available),
+            category=category,
+            tag=tag,
+            shop_id=shop.id
+        )
+
+        db.session.add(product)
+        db.session.commit()
+
+        # Handling image upload
+        if 'images' not in request.files:
+            return {'error': 'No images uploaded'}, 400
+
+        files = request.files.getlist('images')
+
+        for file in files:
+            if file and self.allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
+                file.save(file_path)
+                image_url = photos.url(filename)
+
+                product_image = ProductsImages(image_url=image_url, product_id=product.id)
+                db.session.add(product_image)
+
+        db.session.commit()
+
+        return {'message': 'Product created and images uploaded successfully', 'product_id': product.id}, 201
+
+    @staticmethod
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+
+class ShopResource(Resource):
+    @jwt_required()
+    def post(self):
+        seller_id = get_jwt_identity()
+
+        # Checking if the user already has a shop
+        existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if existing_shop:
+            # Updating existing shop details if it already exists
+            return self.update_shop(existing_shop)
+
+        # Creating a new shop if the user doesn't have one
+        return self.create_shop(seller_id)
+
+    def create_shop(self, seller_id):
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
+
+        # print(f"Name: {name}")
+        # print(f"Description: {description}")
+        # print(f"Location: {location}")
+        # print(f"Contact: {contact}")
+
+        if not all([name, description, location, contact]):
+            return {'error': 'Missing required fields'}, 400
+
+        # Handling logo image upload
+        if 'logo_image' not in request.files:
+            return {'error': 'No logo image uploaded'}, 400
+
+        logo_file = request.files['logo_image']
+        if not logo_file or not self.allowed_file(logo_file.filename):
+            return {'error': 'Invalid logo image file'}, 400
+
+        logo_filename = secure_filename(logo_file.filename)
+        logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+        logo_file.save(logo_file_path)
+        logo_image_url = photos.url(logo_filename)
+
+        # Handling banner image upload
+        if 'banner_image' not in request.files:
+            return {'error': 'No banner image uploaded'}, 400
+
+        banner_file = request.files['banner_image']
+        if not banner_file or not self.allowed_file(banner_file.filename):
+            return {'error': 'Invalid banner image file'}, 400
+
+        banner_filename = secure_filename(banner_file.filename)
+        banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+        banner_file.save(banner_file_path)
+        banner_image_url = photos.url(banner_filename)
+
+        shop = Shop(
+            name=name,
+            description=description,
+            location=location,
+            contact=contact,
+            logo_image_url=logo_image_url,
+            banner_image_url=banner_image_url,
+            seller_id=seller_id
+        )
+
+        db.session.add(shop)
+        db.session.commit()
+
+        return {'message': 'Shop created successfully', 'shop_id': shop.id}, 201
+
+    def update_shop(self, shop):
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
+
+        # Updating the shop details if provided
+        if name:
+            shop.name = name
+        if description:
+            shop.description = description
+        if location:
+            shop.location = location
+        if contact:
+            shop.contact = contact
+
+        # Handling logo image upload if provided
+        if 'logo_image' in request.files:
+            logo_file = request.files['logo_image']
+            if logo_file and self.allowed_file(logo_file.filename):
+                logo_filename = secure_filename(logo_file.filename)
+                logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+                logo_file.save(logo_file_path)
+                logo_image_url = photos.url(logo_filename)
+                shop.logo_image_url = logo_image_url
+
+        # Handling banner image upload if provided
+        if 'banner_image' in request.files:
+            banner_file = request.files['banner_image']
+            if banner_file and self.allowed_file(banner_file.filename):
+                banner_filename = secure_filename(banner_file.filename)
+                banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+                banner_file.save(banner_file_path)
+                banner_image_url = photos.url(banner_filename)
+                shop.banner_image_url = banner_image_url
+
+        db.session.commit()
+
+        return {'message': 'Shop updated successfully'}, 200
+
+    @staticmethod
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+  
 class ShopIndex(Resource):
     def get(self, id):
 
@@ -295,15 +491,16 @@ class Orders(Resource):
             name = data.get('name')
             country = data.get('country')
             city = data.get('city')
-            delivery_persons = data.get('delivery_persons')
+            delivery_id = data.get('delivery_persons')
+            created_at = datetime.now(timezone.utc)
 
             # if None in [total_price, status, delivery_fee, delivery_address]:
             #     return {'message': 'Required field(s) missing'}, 400
 
             # Getting the current time
-            created_at = datetime.now(timezone.utc)
+            
 
-            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_persons=delivery_persons)
+            order = Order(buyers_id=user_id, total_price=total_price, status=status, delivery_fee=delivery_fee, delivery_address=delivery_address, created_at=created_at, contact=contact, name=name, country=country, city=city, delivery_id=delivery_id)
             db.session.add(order)
             db.session.commit()
 
@@ -312,6 +509,24 @@ class Orders(Resource):
                 orderitem = OrderItem(order_id=order.id, product_id=item['id'], quantity=item['quantity'])
                 db.session.add(orderitem)
                 db.session.commit()
+
+            if data['mpesa_contact']:
+                
+                number = data['mpesa_contact']
+                amount = data['total_price']
+
+                data = {
+                "business_shortcode": "174379",
+                "passcode": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+                "amount": amount,
+                "phone_number": number,
+                "reference_code": "Banda",
+                "callback_url": "https://mybanda-backend-88l2.onrender.com/stk",
+                "description": "Reverse afterwards"
+                }
+                resp = mpesa_api.MpesaExpress.stk_push(**data)
+                # return resp,200
+
 
             return make_response(order.to_dict(), 201)
         
@@ -370,8 +585,8 @@ class OrderItems(Resource):
             db.session.rollback()
             return {"message": str(e)}, 500
         
-
-  
+        
+        
 class OrderIndex(Resource):
     @jwt_required()
     def get(self, order_id):
@@ -382,35 +597,40 @@ class OrderIndex(Resource):
             return order.to_dict(), 200
         except Exception as e:
             return {"message": str(e)}, 500
-        
-    
-    @jwt_required()
+
+    @jwt_required() 
     def patch(self, order_id):
+        # print(f"Received ID: {id}")  
         try:
             user_id = get_jwt_identity()
-            
+            # print(f"User ID from JWT: {user_id}") 
+
+            # print(f"User ID from JWT: {user_id}") 
+
             if not user_id:
                 return {'message': 'User not logged in'}, 401
 
             data = request.get_json()
             new_status = data.get('status')
+            # print(f"New status from request: {new_status}") 
 
             # if not new_status:
             #     return {'message': 'New status not provided'}, 400
 
+            print(f"Querying order with ID: {id} and buyers_id: {user_id}")  
             order = Order.query.filter_by(id=order_id).first()
+            # print(f"Found order: {order}") 
             if not order:
                 return {'message': 'Order not found'}, 404
 
             order.status = new_status
             db.session.commit()
+            # print(f"Order status updated to: {order.status}")  
 
             return make_response(order.to_dict(), 200)
         except Exception as e:
             db.session.rollback()
             return {'message': str(e)}, 500
-
-
 
 
 class Reviews(Resource):
@@ -567,15 +787,13 @@ class LikedProducts(Resource):
             200
         )
     
+    @jwt_required()
     def post(self):
-
         data = request.get_json()
 
         product_id = data["product_id"]
-        # buyers_id = session['user_id']
+        buyers_id = get_jwt_identity()
 
-
-        buyers_id = 108
 
         if None in [buyers_id, product_id]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -588,6 +806,10 @@ class LikedProducts(Resource):
         buyer = User.query.get(buyers_id)
         if not buyer:
             return {'message': 'Buyer does not exist'}, 404
+        
+        exists = LikedProduct.query.filter(LikedProduct.buyers_id == buyers_id, LikedProduct.product_id == product_id).first()
+        if exists:
+            return {'message': 'Product already liked'}, 400
         
         like = LikedProduct(product=product, buyer=buyer)
         db.session.add(like)
@@ -704,10 +926,15 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
-api.add_resource(Prompt, '/prompt')
+api.add_resource(CreateProduct, '/upload_image/product')
+api.add_resource(ShopResource, '/shop/uploads/images')
+# api.add_resource(Admin, '/admin/users')
+# api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
+
 
 
 
 
 if __name__ == '__main__':
+    # create_super_admin()
     app.run(port=5555, debug=True)
