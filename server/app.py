@@ -437,10 +437,14 @@ class Reviews(Resource):
                 return {'message': 'No data provided'}, 400
 
             content = data.get('content')
-            rating = data.get('rating')
+            rating = data.get('rating') # 1 to 5
             buyer_id = user_id  # the logged-in user is the buyer
-            seller_id = data.get('seller_id')
             product_id = data.get('product_id')
+            seller_id = Product.query.filter(Product.id == product_id).first().to_dict()['shop']['seller_id']
+            print("this is the seller id:", seller_id)
+
+            date = datetime.now(timezone.utc)
+
 
             if None in [content, rating, seller_id, product_id]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -448,10 +452,11 @@ class Reviews(Resource):
             # Checking if the seller and product exist before adding them
             seller = User.query.get(seller_id)
             product = Product.query.get(product_id)
+            buyer = User.query.get(buyer_id)
             if not seller or not product:
                 return {'message': 'Seller or product does not exist'}, 404
 
-            review = Review(content=content, buyer_id=buyer_id, seller_id=seller_id, product_id=product_id, rating=rating)
+            review = Review(content=content, rating=rating, buyer=buyer, seller=seller, product=product, date=date)
             db.session.add(review)
             db.session.commit()
 
