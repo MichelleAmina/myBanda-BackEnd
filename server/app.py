@@ -60,7 +60,7 @@ class Login(Resource):
             
             # session['user_id'] = user.id
             access_token = create_access_token(identity=user.id)
-            return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
+            return {'message': 'Login successful', 'access_token': access_token, 'role': user.role, 'isNewSeller': user.is_new_seller}, 200
         except Exception as e:
             return {'message': str(e)}, 500    
 
@@ -438,9 +438,14 @@ class Shops(Resource):
 
             if not name or not seller_id:
                 return {"message": "name and seller_id are required fields!"}, 400
+            
 
             shop = Shop(name=name, description=description, logo_image_url=logo_image_url, banner_image_url=banner_image_url, seller_id=seller_id, contact=contact, location=location)
             db.session.add(shop)
+            db.session.commit()
+
+            seller = User.query.filter(User.id == seller_id).first()
+            seller.is_new_seller = False
             db.session.commit()
 
             return make_response(
