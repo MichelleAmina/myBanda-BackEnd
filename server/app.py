@@ -172,7 +172,7 @@ class Products(Resource):
         category = data.get('category')
         shop_id = data.get('shop_id')
         tag = data.get('get')
-        specs = data.get('specs')
+        # specs = data.get('specs')
 
 
         product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id, tag=tag) 
@@ -181,10 +181,10 @@ class Products(Resource):
         image = ProductsImages(image_url=image_url, product=product)
         db.session.add(image)
         db.session.commit()
-        for spec in specs:
-            specification = Specification(spec=spec, product=product)
-            db.session.add(specification)
-            db.session.commit()
+        # for spec in specs:
+        #     specification = Specification(spec=spec, product=product)
+        #     db.session.add(specification)
+        #     db.session.commit()
 
         return make_response(
             product.to_dict(),
@@ -571,7 +571,7 @@ class OrderItems(Resource):
             order_id = data.get('order_id')
             product_id = data.get('product_id')
             quantity = data.get('quantity')
-            specification = data.get('specification')
+            # specification = data.get('specification')
 
             if None in [order_id, product_id, quantity]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -586,7 +586,7 @@ class OrderItems(Resource):
             if not product:
                 return {'message': 'Product does not exist'}, 404
 
-            order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity, specification=specification)
+            order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity)
             db.session.add(order_item)
             db.session.commit()
 
