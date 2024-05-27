@@ -276,11 +276,15 @@ class CreateProduct(Resource):
 
 
 
-
 class ShopResource(Resource):
     @jwt_required()
     def post(self):
         seller_id = get_jwt_identity()
+
+        # Verify that seller_id exists in the user table
+        user = User.query.get(seller_id)
+        if not user:
+            return {'error': 'Invalid seller ID'}, 400
 
         # Checking if the user already has a shop
         existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
@@ -298,11 +302,6 @@ class ShopResource(Resource):
         description = data.get('description')
         location = data.get('location')
         contact = data.get('contact')
-
-        # print(f"Name: {name}")
-        # print(f"Description: {description}")
-        # print(f"Location: {location}")
-        # print(f"Contact: {contact}")
 
         if not all([name, description, location, contact]):
             return {'error': 'Missing required fields'}, 400
@@ -394,7 +393,6 @@ class ShopResource(Resource):
     def allowed_file(filename):
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 
 
