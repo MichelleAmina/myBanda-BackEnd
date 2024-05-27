@@ -208,7 +208,7 @@ class Review(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer)
-    date = db.Column(db.String)
+    date = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     buyer = db.relationship('User', back_populates='reviews_given', foreign_keys=[buyer_id], lazy='joined')
