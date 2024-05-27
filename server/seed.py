@@ -1,6 +1,5 @@
 from models import User, Shop, Product, Order, OrderItem, Review, ProductsImages, LikedProduct, Transaction
-from config import app, db
-import datetime
+from config import app, db, timezone, datetime
 
 
 with app.app_context():
@@ -194,12 +193,12 @@ with app.app_context():
     db.session.commit()
 
     print("Seeding reviews...")
-    lamp_review_1 = Review(content='The lighting is perfect for the bedside. Great customer service too.', rating=5, buyer=mike, seller=rob, product=lamp, date=str(datetime.datetime.now()))
-    lamp_review_2 = Review(content='The actual product is nothing like the image shown. The buyer has also been frustrating on getting my refund.', rating=1, buyer=mike, seller=rob, product=lamp, date=str(datetime.datetime.now()))
-    lamp_review_3 = Review(content='Meeh. Does the lighting, but it\'s not all that.', rating=3, buyer=mike, seller=rob, product=lamp, date=str(datetime.datetime.now()))
-    laptop_review_1 = Review(content='Wonderful. I\'ve had it for 5 years and still works like brand new.', rating=5, buyer=mike, seller=rob, product=laptop, date=str(datetime.datetime.now()))
-    laptop_review_2 = Review(content='I am still waiting for over a year now to get my laptop delivered after paying. Scammer!!!!!', rating=1, buyer=mike, seller=rob, product=laptop, date=str(datetime.datetime.now()))
-    laptop_review_3 = Review(content='Great for the price. A bit laggy though.', rating=3, buyer=mike, seller=rob, product=laptop, date=str(datetime.datetime.now()))
+    lamp_review_1 = Review(content='The lighting is perfect for the bedside. Great customer service too.', rating=5, buyer=mike, seller=rob, product=lamp, date = datetime.now(timezone.utc))
+    lamp_review_2 = Review(content='The actual product is nothing like the image shown. The buyer has also been frustrating on getting my refund.', rating=1, buyer=mike, seller=rob, product=lamp, date = datetime.now(timezone.utc))
+    lamp_review_3 = Review(content='Meeh. Does the lighting, but it\'s not all that.', rating=3, buyer=mike, seller=rob, product=lamp, date = datetime.now(timezone.utc))
+    laptop_review_1 = Review(content='Wonderful. I\'ve had it for 5 years and still works like brand new.', rating=5, buyer=mike, seller=rob, product=laptop, date = datetime.now(timezone.utc))
+    laptop_review_2 = Review(content='I am still waiting for over a year now to get my laptop delivered after paying. Scammer!!!!!', rating=1, buyer=mike, seller=rob, product=laptop, date = datetime.now(timezone.utc))
+    laptop_review_3 = Review(content='Great for the price. A bit laggy though.', rating=3, buyer=mike, seller=rob, product=laptop, date = datetime.now(timezone.utc))
     reviews = [lamp_review_1, lamp_review_2, lamp_review_3, laptop_review_1, laptop_review_2, laptop_review_3]
     db.session.add_all(reviews)
     db.session.commit()
