@@ -31,6 +31,7 @@ itsdangerous = "*"
 py3-validate-email = "*"
 validate-email = "*"
 email-validator = "*"
+flask-uploads = "*"
 
 [dev-packages]
 

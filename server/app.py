@@ -1,6 +1,6 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password, photos, reqparse, os
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -8,6 +8,10 @@ from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_cors import cross_origin
+# from flask_uploads import UploadNotAllowed
+from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
+
 
 
 
@@ -59,104 +63,6 @@ class Login(Resource):
             return {'message': 'Login successful', 'access_token': access_token, 'role': user.role}, 200
         except Exception as e:
             return {'message': str(e)}, 500    
-
-
-# class Admin(Resource):
-#     @cross_origin()
-#     @jwt_required()
-#     def get(self):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = User.query.get(current_user_id)
-            
-#             if not isinstance(current_user, User) or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Unauthorized access'}), 403
-                
-#             all_users = User.query.all()
-            
-#             serialized_users = [user.to_dict() for user in all_users]
-            
-#             return jsonify(serialized_users), 200
-            
-#         except Exception as e:
-#             return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
-      
-
-
-# class UserDetailsAdmin(Resource):
-#     @jwt_required()
-#     @cross_origin() 
-#     def get(self, user_id):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = db.session.get(User, current_user_id)
-            
-#             if not current_user or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-            
-#             target_user = db.session.get(User, user_id)
-#             if not target_user:
-#                 return jsonify({'message': 'User not found'}), 404
-            
-#             return jsonify(target_user.to_dict()), 200
-#         except Exception as e:
-#             return jsonify({'message': str(e)}), 500
-
-#     @jwt_required()
-#     @cross_origin() 
-#     def put(self, user_id):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = db.session.get(User, current_user_id)
-            
-#             if not current_user or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-            
-#             target_user = db.session.get(User, user_id)
-#             if not target_user:
-#                 return jsonify({'message': 'User not found'}), 404
-            
-#             data = request.json
-#             if 'username' in data:
-#                 target_user.username = data['username']
-#             if 'email' in data:
-#                 target_user.email = data['email']
-#             if 'location' in data:
-#                 target_user.location = data['location']
-#             if 'contact' in data:
-#                 target_user.contact = data['contact']
-#             if 'role' in data:
-#                 target_user.role = data['role']
-#             if 'is_banda_admin' in data:
-#                 target_user.is_banda_admin = data['is_banda_admin']
-#             if 'is_banda_delivery' in data:
-#                 target_user.is_banda_delivery = data['is_banda_delivery']
-
-#             db.session.commit()
-#             return jsonify({'message': 'User updated successfully'}), 200
-#         except Exception as e:
-#             return jsonify({'message': str(e)}), 500
-
-#     @jwt_required()
-#     @cross_origin() 
-#     def delete(self, user_id):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = db.session.get(User, current_user_id)
-            
-#             if not current_user or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-            
-#             target_user = db.session.get(User, user_id)
-#             if not target_user:
-#                 return jsonify({'message': 'User not found'}), 404
-            
-#             db.session.delete(target_user)
-#             db.session.commit()
-#             return jsonify({'message': 'User deleted successfully'}), 200
-#         except Exception as e:
-#             return jsonify({'message': str(e)}), 500
-
 
 
 class Users(Resource):
@@ -303,7 +209,196 @@ class Images(Resource):
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
-    
+ 
+
+
+
+class CreateProduct(Resource):
+    @jwt_required()
+    def post(self):
+        seller_id = get_jwt_identity()
+
+        # Retrieve shop for the seller
+        shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if not shop:
+            return {'error': 'No shop found for the seller'}, 404
+
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        price = data.get('price')
+        quantity_available = data.get('quantity_available')
+        category = data.get('category')
+        tag = data.get('tag')
+
+        if not all([name, description, price, quantity_available, category]):
+            return {'error': 'Missing required fields'}, 400
+
+        product = Product(
+            name=name,
+            description=description,
+            price=float(price),
+            quantity_available=int(quantity_available),
+            category=category,
+            tag=tag,
+            shop_id=shop.id
+        )
+
+        db.session.add(product)
+        db.session.commit()
+
+        # Handling image upload
+        if 'images' not in request.files:
+            return {'error': 'No images uploaded'}, 400
+
+        files = request.files.getlist('images')
+
+        for file in files:
+            if file and self.allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
+                file.save(file_path)
+                image_url = photos.url(filename)
+
+                product_image = ProductsImages(image_url=image_url, product_id=product.id)
+                db.session.add(product_image)
+
+        db.session.commit()
+
+        return {'message': 'Product created and images uploaded successfully', 'product_id': product.id}, 201
+
+    @staticmethod
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+
+class ShopResource(Resource):
+    @jwt_required()
+    def post(self):
+        seller_id = get_jwt_identity()
+
+        # Checking if the user already has a shop
+        existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if existing_shop:
+            # Updating existing shop details if it already exists
+            return self.update_shop(existing_shop)
+
+        # Creating a new shop if the user doesn't have one
+        return self.create_shop(seller_id)
+
+    def create_shop(self, seller_id):
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
+
+        # print(f"Name: {name}")
+        # print(f"Description: {description}")
+        # print(f"Location: {location}")
+        # print(f"Contact: {contact}")
+
+        if not all([name, description, location, contact]):
+            return {'error': 'Missing required fields'}, 400
+
+        # Handling logo image upload
+        if 'logo_image' not in request.files:
+            return {'error': 'No logo image uploaded'}, 400
+
+        logo_file = request.files['logo_image']
+        if not logo_file or not self.allowed_file(logo_file.filename):
+            return {'error': 'Invalid logo image file'}, 400
+
+        logo_filename = secure_filename(logo_file.filename)
+        logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+        logo_file.save(logo_file_path)
+        logo_image_url = photos.url(logo_filename)
+
+        # Handling banner image upload
+        if 'banner_image' not in request.files:
+            return {'error': 'No banner image uploaded'}, 400
+
+        banner_file = request.files['banner_image']
+        if not banner_file or not self.allowed_file(banner_file.filename):
+            return {'error': 'Invalid banner image file'}, 400
+
+        banner_filename = secure_filename(banner_file.filename)
+        banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+        banner_file.save(banner_file_path)
+        banner_image_url = photos.url(banner_filename)
+
+        shop = Shop(
+            name=name,
+            description=description,
+            location=location,
+            contact=contact,
+            logo_image_url=logo_image_url,
+            banner_image_url=banner_image_url,
+            seller_id=seller_id
+        )
+
+        db.session.add(shop)
+        db.session.commit()
+
+        return {'message': 'Shop created successfully', 'shop_id': shop.id}, 201
+
+    def update_shop(self, shop):
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
+
+        # Updating the shop details if provided
+        if name:
+            shop.name = name
+        if description:
+            shop.description = description
+        if location:
+            shop.location = location
+        if contact:
+            shop.contact = contact
+
+        # Handling logo image upload if provided
+        if 'logo_image' in request.files:
+            logo_file = request.files['logo_image']
+            if logo_file and self.allowed_file(logo_file.filename):
+                logo_filename = secure_filename(logo_file.filename)
+                logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+                logo_file.save(logo_file_path)
+                logo_image_url = photos.url(logo_filename)
+                shop.logo_image_url = logo_image_url
+
+        # Handling banner image upload if provided
+        if 'banner_image' in request.files:
+            banner_file = request.files['banner_image']
+            if banner_file and self.allowed_file(banner_file.filename):
+                banner_filename = secure_filename(banner_file.filename)
+                banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+                banner_file.save(banner_file_path)
+                banner_image_url = photos.url(banner_filename)
+                shop.banner_image_url = banner_image_url
+
+        db.session.commit()
+
+        return {'message': 'Shop updated successfully'}, 200
+
+    @staticmethod
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+  
 class ShopIndex(Resource):
     def get(self, id):
 
@@ -828,8 +923,11 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
+api.add_resource(CreateProduct, '/upload_image/product')
+api.add_resource(ShopResource, '/shop/uploads/images')
 # api.add_resource(Admin, '/admin/users')
 # api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
+
 
 
 
