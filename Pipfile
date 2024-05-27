@@ -32,6 +32,7 @@ validate-email = "*"
 email-validator = "*"
 flask-uploads = "*"
 werkzeug = "*"
+cloudinary = "*"
 
 [dev-packages]
 

@@ -2,6 +2,8 @@ from config import db, SQLAlchemy, validates, SerializerMixin, hybrid_property, 
 from itsdangerous import URLSafeSerializer
 import jwt
 
+import cloudinary.uploader
+
 class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
@@ -95,6 +97,16 @@ class Shop(db.Model, SerializerMixin):
 
     serialize_rules = ('-products.shop', '-seller.reviews_received', '-seller.shop')
 
+    def upload_banner_to_cloudinary(self, banner_file):  
+        upload_result = cloudinary.uploader.upload(banner_file)
+        self.banner_image_url = upload_result['secure_url']
+            
+
+    def upload_logo_to_cloudinary(self, logo_file):
+        upload_result = cloudinary.uploader.upload(logo_file)
+        self.logo_image_url = upload_result['secure_url']
+
+    
     def __repr__(self):
         return f'<Shop {self.name} owned by {self.seller_id}>'
 
@@ -131,6 +143,16 @@ class ProductsImages(db.Model, SerializerMixin):
     product = db.relationship('Product', back_populates='images')
 
     serialize_rules = ('-product.images',)
+
+    # def upload_image(self, image):
+    #     upload_result = cloudinary.uploader.upload(image)
+    #     self.image_url = upload_result('url')
+
+    def upload_image(self, image):
+        upload_result = cloudinary.uploader.upload(image)
+        self.image_url = upload_result['url']
+
+    
 
 class Specification(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)

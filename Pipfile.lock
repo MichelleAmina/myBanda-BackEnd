@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "787e42be624003b0a002c7df142a9a968432058729ec2d0eed440831a80d7a5c"
+            "sha256": "9749be0cc887871cdfc13f60b33929b62d9f6bd0fea1f6ad1a55cfa91d99d013"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -192,6 +192,13 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==8.1.7"
+        },
+        "cloudinary": {
+            "hashes": [
+                "sha256:fe1a5309734814b481de637ab3041e8699995387df965ec0f2d8f767db7067a2"
+            ],
+            "index": "pypi",
+            "version": "==1.40.0"
         },
         "dnspython": {
             "hashes": [
