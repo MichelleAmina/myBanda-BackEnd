@@ -14,6 +14,7 @@ class User(db.Model, SerializerMixin):
     # Additional fields for Banda Admin and Delivery. Preset to false until registration / login
     is_banda_admin = db.Column(db.Boolean, default=False)
     is_banda_delivery = db.Column(db.Boolean, default=False)
+    is_new_seller = db.Column(db.Boolean, default=True)
 
     # Relationships for reviews
     reviews_given = db.relationship('Review', back_populates='buyer', foreign_keys='Review.buyer_id', lazy='select')
