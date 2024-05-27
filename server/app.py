@@ -214,7 +214,6 @@ class Products(Resource):
             quantity_available = data.get('quantity')
             category = data.get('category')
 
-            # Fetch the shop ID of the seller
             user = User.query.filter_by(id=seller_id).first()
             if not user or not user.shop:
                 return {"message": "User does not have a shop"}, 400
@@ -233,7 +232,6 @@ class Products(Resource):
             db.session.add(product)
             db.session.commit()
 
-            # Handle image upload
             if 'imageUrls' in request.files:
                 image_file = request.files['imageUrls']
                 image = ProductsImages(product_id=product.id)
@@ -537,12 +535,10 @@ class Shops(Resource):
             banner_image_url = None
             logo_image_url = None
 
-            # Check if banner image is provided and upload to Cloudinary
             if 'banner_image' in request.files:
                 banner_file = request.files['banner_image']
                 banner_image_url = cloudinary.uploader.upload(banner_file)['secure_url']
 
-            # Check if logo image is provided and upload to Cloudinary
             if 'logo_image' in request.files:
                 logo_file = request.files['logo_image']
                 logo_image_url = cloudinary.uploader.upload(logo_file)['secure_url']
