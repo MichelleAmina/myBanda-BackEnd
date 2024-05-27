@@ -16,7 +16,7 @@ from flask_mpesa import MpesaAPI
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask_mail import Mail
 from flask_mail import Message
-from flask_uploads import configure_uploads, IMAGES, UploadSet
+# from flask_uploads import configure_uploads, IMAGES, UploadSet
 
 
 # from jwt.exceptions import DecodeErrors
@@ -46,6 +46,14 @@ app.config['MAIL_PASSWORD'] = '428503172768de'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
+import cloudinary
+          
+cloudinary.config( 
+  cloud_name = os.getenv('cloud_name'),
+  api_key = os.getenv('api_key'),
+  api_secret = os.getenv('api_secret')
+)
+
 sender_email = os.environ.get('EMAIL')
 sender_password = os.environ.get('PASSWORD')
 
@@ -67,19 +75,19 @@ Session(app)
 
 
 # Initializing UploadSet
-photos = UploadSet('photos', IMAGES)
+# photos = UploadSet('photos', IMAGES)
 
-# Defining the upload folder
-# app.config['UPLOAD_FOLDER'] = './server/uploads' 
-app.config['UPLOAD_FOLDER'] = '../server/uploads' 
-app.config['UPLOADED_PHOTOS_DEST'] = app.config['UPLOAD_FOLDER']
+# # Defining the upload folder
+# # app.config['UPLOAD_FOLDER'] = './server/uploads' 
+# app.config['UPLOAD_FOLDER'] = '../server/uploads' 
+# app.config['UPLOADED_PHOTOS_DEST'] = app.config['UPLOAD_FOLDER']
 
-# Creating the upload folder if it doesn't exist
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-    print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' created successfully.")
-else:
-    print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' already exists.")
+# # Creating the upload folder if it doesn't exist
+# if not os.path.exists(app.config['UPLOAD_FOLDER']):
+#     os.makedirs(app.config['UPLOAD_FOLDER'])
+#     print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' created successfully.")
+# else:
+#     print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' already exists.")
 
-# Configuring uploads
-configure_uploads(app, photos)
+# # Configuring uploads
+# configure_uploads(app, photos)
