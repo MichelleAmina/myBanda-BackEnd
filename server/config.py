@@ -48,10 +48,16 @@ app.config['MAIL_USE_SSL'] = False
 
 import cloudinary
           
+# cloudinary.config( 
+#   cloud_name = os.getenv('cloud_name'),
+#   api_key = os.getenv('api_key'),
+#   api_secret = os.getenv('api_secret')
+# )
+
 cloudinary.config( 
-  cloud_name = os.getenv('cloud_name'),
-  api_key = os.getenv('api_key'),
-  api_secret = os.getenv('api_secret')
+  cloud_name = "dol3eg0to",
+  api_key = "843678846326154",
+  api_secret = "qWeEH2FpH50S8ctME2xpv-tLKtI"
 )
 
 sender_email = os.environ.get('EMAIL')

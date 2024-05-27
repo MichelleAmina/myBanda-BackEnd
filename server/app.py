@@ -170,13 +170,13 @@ class Products(Resource):
     def post(self):
         seller_id = get_jwt_identity()
 
-        data = request.form
-        name = data['productName']
-        description = data['description']
-        price = data['price']
-        image_url = data['imageUrls']
-        quantity_available = data['quantity']
-        category = data['category']
+        # data = request.form()
+        name = request.form['productName']
+        description = request.form['description']
+        price = request.form['price']
+        image_url = request.form['imageUrls']
+        quantity_available = request.form['quantity']
+        category = request.form['category']
         # shop_id = data['shop_id']
         # tag = data['get']
         # specs = data.get('sizes')
