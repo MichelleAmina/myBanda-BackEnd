@@ -65,104 +65,6 @@ class Login(Resource):
             return {'message': str(e)}, 500    
 
 
-# class Admin(Resource):
-#     @cross_origin()
-#     @jwt_required()
-#     def get(self):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = User.query.get(current_user_id)
-            
-#             if not isinstance(current_user, User) or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Unauthorized access'}), 403
-                
-#             all_users = User.query.all()
-            
-#             serialized_users = [user.to_dict() for user in all_users]
-            
-#             return jsonify(serialized_users), 200
-            
-#         except Exception as e:
-#             return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
-      
-
-
-# class UserDetailsAdmin(Resource):
-#     @jwt_required()
-#     @cross_origin() 
-#     def get(self, user_id):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = db.session.get(User, current_user_id)
-            
-#             if not current_user or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-            
-#             target_user = db.session.get(User, user_id)
-#             if not target_user:
-#                 return jsonify({'message': 'User not found'}), 404
-            
-#             return jsonify(target_user.to_dict()), 200
-#         except Exception as e:
-#             return jsonify({'message': str(e)}), 500
-
-#     @jwt_required()
-#     @cross_origin() 
-#     def put(self, user_id):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = db.session.get(User, current_user_id)
-            
-#             if not current_user or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-            
-#             target_user = db.session.get(User, user_id)
-#             if not target_user:
-#                 return jsonify({'message': 'User not found'}), 404
-            
-#             data = request.json
-#             if 'username' in data:
-#                 target_user.username = data['username']
-#             if 'email' in data:
-#                 target_user.email = data['email']
-#             if 'location' in data:
-#                 target_user.location = data['location']
-#             if 'contact' in data:
-#                 target_user.contact = data['contact']
-#             if 'role' in data:
-#                 target_user.role = data['role']
-#             if 'is_banda_admin' in data:
-#                 target_user.is_banda_admin = data['is_banda_admin']
-#             if 'is_banda_delivery' in data:
-#                 target_user.is_banda_delivery = data['is_banda_delivery']
-
-#             db.session.commit()
-#             return jsonify({'message': 'User updated successfully'}), 200
-#         except Exception as e:
-#             return jsonify({'message': str(e)}), 500
-
-#     @jwt_required()
-#     @cross_origin() 
-#     def delete(self, user_id):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             current_user = db.session.get(User, current_user_id)
-            
-#             if not current_user or not current_user.is_banda_admin:
-#                 return jsonify({'message': 'Access Denied, Admin privileges required'}), 403
-            
-#             target_user = db.session.get(User, user_id)
-#             if not target_user:
-#                 return jsonify({'message': 'User not found'}), 404
-            
-#             db.session.delete(target_user)
-#             db.session.commit()
-#             return jsonify({'message': 'User deleted successfully'}), 200
-#         except Exception as e:
-#             return jsonify({'message': str(e)}), 500
-
-
-
 class Users(Resource):
     def get(self):
         
@@ -309,7 +211,7 @@ class Images(Resource):
             return {"message": str(e)}, 500
  
 
-# class UploadImage(Resource):
+# class UploadProductImage(Resource):
 #     @jwt_required()
 #     def post(self):
 #         buyer_id = get_jwt_identity()  
@@ -339,6 +241,7 @@ class Images(Resource):
 #         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+
 # class RetrieveImage(Resource):
 #     def get(self, image_id):
 #         product_image = ProductsImages.query.get(image_id)
@@ -354,76 +257,321 @@ class Images(Resource):
 # type: logo or banner
 # image: (choose a file)
 
-class UploadShopImage(Resource):
+import logging
+
+# class UploadShopImage(Resource):
+#     @jwt_required()
+#     def post(self):
+#         try:
+#             user_id = get_jwt_identity()
+#             user = User.query.get(user_id)
+
+#             if not user or not user.shop:
+#                 return jsonify({"error": "User does not own a shop"}), 400
+
+#             if 'image' not in request.files or 'image_type' not in request.form:
+#                 return jsonify({"error": "No image file or image_type provided"}), 400
+
+#             image_type = request.form['image_type']
+
+#             if image_type not in ['banner', 'logo']:
+#                 return jsonify({"error": "Invalid image type. Must be 'banner' or 'logo'"}), 400
+
+#             file = request.files['image']
+#             filename = secure_filename(file.filename)
+#             file_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], filename)
+#             file.save(file_path)
+#             image_url = photos.url(filename)
+
+#             # Save the shop image to the database
+#             shop = user.shop
+#             if image_type == 'banner':
+#                 shop.banner_image_url = image_url
+#             elif image_type == 'logo':
+#                 shop.logo_image_url = image_url
+
+#             db.session.commit()
+
+#             # Print the data before serialization
+#             print("Data to be serialized:", {
+#                 "message": "Shop image uploaded successfully",
+#                 "image_url": image_url,
+#                 "shop": {
+#                     "shop_id": shop.id,
+#                     "shop_name": shop.name,
+#                     "banner_image_url": shop.banner_image_url,
+#                     "logo_image_url": shop.logo_url
+#                 }
+#             })
+
+#             response_data = {
+#                 "message": "Shop image uploaded successfully",
+#                 "image_url": image_url,
+#                 "shop": {
+#                     "shop_id": shop.id,
+#                     "shop_name": shop.name,
+#                     "banner_image_url": shop.banner_image_url,
+#                     "logo_image_url": shop.logo_url
+#                 }
+#             }
+
+#             return response_data, 200
+
+#         except Exception as e:
+#             logging.error(f"Error uploading shop image: {e}")
+#             return jsonify({"error": str(e)}), 500
+
+
+
+class CreateProduct(Resource):
     @jwt_required()
     def post(self):
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-        
-        if not user or not user.shop:
-            return jsonify({"error": "User does not own a shop"}), 400
+        seller_id = get_jwt_identity()
 
-        if 'image' not in request.files:
-            return jsonify({"error": "No image file provided"}), 400
+        # Retrieve shop for the seller
+        shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if not shop:
+            return {'error': 'No shop found for the seller'}, 404
 
-        image = request.files['image']
-        if image.filename == '':
-            return jsonify({"error": "No selected file"}), 400
-        
-        filename = secure_filename(image.filename)
-        image.save(os.path.join(app.config['UPLOADS_DEFAULT_DEST'], filename))
-        image_url = photos.url(filename)
+        data = request.form
 
-        if 'type' not in request.form:
-            return jsonify({"error": "Image type not specified"}), 400
+        name = data.get('name')
+        description = data.get('description')
+        price = data.get('price')
+        quantity_available = data.get('quantity_available')
+        category = data.get('category')
+        tag = data.get('tag')
 
-        image_type = request.form['type']
-        if image_type == 'logo':
-            user.shop.logo_image_url = image_url
-        elif image_type == 'banner':
-            user.shop.banner_image_url = image_url
-        else:
-            return jsonify({"error": "Invalid image type specified"}), 400
+        if not all([name, description, price, quantity_available, category]):
+            return {'error': 'Missing required fields'}, 400
+
+        product = Product(
+            name=name,
+            description=description,
+            price=float(price),
+            quantity_available=int(quantity_available),
+            category=category,
+            tag=tag,
+            shop_id=shop.id
+        )
+
+        db.session.add(product)
+        db.session.commit()
+
+        # Handling image upload
+        if 'images' not in request.files:
+            return {'error': 'No images uploaded'}, 400
+
+        files = request.files.getlist('images')
+
+        for file in files:
+            if file and self.allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], filename)
+                file.save(file_path)
+                image_url = photos.url(filename)
+
+                product_image = ProductsImages(image_url=image_url, product_id=product.id)
+                db.session.add(product_image)
 
         db.session.commit()
-        return jsonify({"message": "Image uploaded successfully", "image_url": image_url}), 200
+
+        return {'message': 'Product created and images uploaded successfully', 'product_id': product.id}, 201
+
+    @staticmethod
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# class CreateShop(Resource):
+#     @jwt_required()
+#     def post(self):
+#         seller_id = get_jwt_identity()
+
+#         # Check if the user already has a shop
+#         existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
+#         if existing_shop:
+#             return {'error': 'User already has a shop'}, 400
+
+#         data = request.form
+
+#         name = data.get('name')
+#         description = data.get('description')
+#         location = data.get('location')
+#         contact = data.get('contact')
+
+#         if not all([name, description, location, contact]):
+#             return {'error': 'Missing required fields'}, 400
+
+#         # Handling logo image upload
+#         if 'logo_image' not in request.files:
+#             return {'error': 'No logo image uploaded'}, 400
+
+#         logo_file = request.files['logo_image']
+#         if not logo_file or not self.allowed_file(logo_file.filename):
+#             return {'error': 'Invalid logo image file'}, 400
+
+#         logo_filename = secure_filename(logo_file.filename)
+#         logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+#         logo_file.save(logo_file_path)
+#         logo_image_url = photos.url(logo_filename)
+
+#         # Handling banner image upload
+#         if 'banner_image' not in request.files:
+#             return {'error': 'No banner image uploaded'}, 400
+
+#         banner_file = request.files['banner_image']
+#         if not banner_file or not self.allowed_file(banner_file.filename):
+#             return {'error': 'Invalid banner image file'}, 400
+
+#         banner_filename = secure_filename(banner_file.filename)
+#         banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+#         banner_file.save(banner_file_path)
+#         banner_image_url = photos.url(banner_filename)
+
+#         shop = Shop(
+#             name=name,
+#             description=description,
+#             location=location,
+#             contact=contact,
+#             logo_image_url=logo_image_url,
+#             banner_image_url=banner_image_url,
+#             seller_id=seller_id
+#         )
+
+#         db.session.add(shop)
+#         db.session.commit()
+
+#         return {'message': 'Shop created successfully', 'shop_id': shop.id}, 201
+
+#     @staticmethod
+#     def allowed_file(filename):
+#         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+#         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 
-# Body (form-data):
-# product_id: <PRODUCT_ID>
-# image: (choose a file)
-class UploadProductImage(Resource):
+class ShopResource(Resource):
     @jwt_required()
     def post(self):
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
+        seller_id = get_jwt_identity()
 
-        if not user or not user.shop:
-            return jsonify({"error": "User does not own a shop"}), 400
+        # Checking if the user already has a shop
+        existing_shop = Shop.query.filter_by(seller_id=seller_id).first()
+        if existing_shop:
+            # Updating existing shop details if it already exists
+            return self.update_shop(existing_shop)
 
-        if 'image' not in request.files or 'product_id' not in request.form:
-            return jsonify({"error": "No image file or product_id provided"}), 400
+        # Creating a new shop if the user doesn't have one
+        return self.create_shop(seller_id)
 
-        image = request.files['image']
-        if image.filename == '':
-            return jsonify({"error": "No selected file"}), 400
+    def create_shop(self, seller_id):
+        data = request.form
 
-        product_id = request.form['product_id']
-        product = Product.query.get(product_id)
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
 
-        if not product or product.shop_id != user.shop.id:
-            return jsonify({"error": "Product not found or does not belong to the shop"}), 400
+        # print(f"Name: {name}")
+        # print(f"Description: {description}")
+        # print(f"Location: {location}")
+        # print(f"Contact: {contact}")
 
-        filename = secure_filename(image.filename)
-        image.save(os.path.join(app.config['UPLOADS_DEFAULT_DEST'], filename))
-        image_url = photos.url(filename)
+        if not all([name, description, location, contact]):
+            return {'error': 'Missing required fields'}, 400
 
-        product_image = ProductsImages(image_url=image_url, product=product)
-        db.session.add(product_image)
+        # Handling logo image upload
+        if 'logo_image' not in request.files:
+            return {'error': 'No logo image uploaded'}, 400
+
+        logo_file = request.files['logo_image']
+        if not logo_file or not self.allowed_file(logo_file.filename):
+            return {'error': 'Invalid logo image file'}, 400
+
+        logo_filename = secure_filename(logo_file.filename)
+        logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+        logo_file.save(logo_file_path)
+        logo_image_url = photos.url(logo_filename)
+
+        # Handling banner image upload
+        if 'banner_image' not in request.files:
+            return {'error': 'No banner image uploaded'}, 400
+
+        banner_file = request.files['banner_image']
+        if not banner_file or not self.allowed_file(banner_file.filename):
+            return {'error': 'Invalid banner image file'}, 400
+
+        banner_filename = secure_filename(banner_file.filename)
+        banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+        banner_file.save(banner_file_path)
+        banner_image_url = photos.url(banner_filename)
+
+        shop = Shop(
+            name=name,
+            description=description,
+            location=location,
+            contact=contact,
+            logo_image_url=logo_image_url,
+            banner_image_url=banner_image_url,
+            seller_id=seller_id
+        )
+
+        db.session.add(shop)
         db.session.commit()
 
-        return jsonify({"message": "Image uploaded successfully", "image_url": image_url}), 200
+        return {'message': 'Shop created successfully', 'shop_id': shop.id}, 201
+
+    def update_shop(self, shop):
+        data = request.form
+
+        name = data.get('name')
+        description = data.get('description')
+        location = data.get('location')
+        contact = data.get('contact')
+
+        # Updating the shop details if provided
+        if name:
+            shop.name = name
+        if description:
+            shop.description = description
+        if location:
+            shop.location = location
+        if contact:
+            shop.contact = contact
+
+        # Handling logo image upload if provided
+        if 'logo_image' in request.files:
+            logo_file = request.files['logo_image']
+            if logo_file and self.allowed_file(logo_file.filename):
+                logo_filename = secure_filename(logo_file.filename)
+                logo_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], logo_filename)
+                logo_file.save(logo_file_path)
+                logo_image_url = photos.url(logo_filename)
+                shop.logo_image_url = logo_image_url
+
+        # Handling banner image upload if provided
+        if 'banner_image' in request.files:
+            banner_file = request.files['banner_image']
+            if banner_file and self.allowed_file(banner_file.filename):
+                banner_filename = secure_filename(banner_file.filename)
+                banner_file_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], banner_filename)
+                banner_file.save(banner_file_path)
+                banner_image_url = photos.url(banner_filename)
+                shop.banner_image_url = banner_image_url
+
+        db.session.commit()
+
+        return {'message': 'Shop updated successfully'}, 200
+
+    @staticmethod
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
 
   
 class ShopIndex(Resource):
@@ -914,8 +1062,8 @@ api.add_resource(DeleteUser, '/del_user/<int:user_id>')
 api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(ReciveToken, '/reset-password/<token>')
 api.add_resource(ChangePassword, '/change-password')
-api.add_resource(UploadImage, '/upload_image')
-api.add_resource(RetrieveImage, '/get_image_urls/<int:image_id>')
+api.add_resource(CreateProduct, '/upload_image/product')
+api.add_resource(ShopResource, '/shop/uploads/images')
 # api.add_resource(Admin, '/admin/users')
 # api.add_resource(UserDetailsAdmin, '/admin/users/<int:user_id>')
 
