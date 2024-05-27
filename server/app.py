@@ -1,6 +1,7 @@
 from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct, Specification
 # from seed import seed_database
-from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password, photos, reqparse, os
+from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password
+# , photos, reqparse, os
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
