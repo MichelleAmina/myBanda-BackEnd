@@ -1,4 +1,4 @@
-from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct
+from models import User, Product, ProductsImages, Shop, Order, Review, OrderItem, Transaction, LikedProduct, Specification
 # from seed import seed_database
 from config import app, db, Flask, request, jsonify, Resource, api, make_response, JWTManager, create_access_token, jwt_required, session,datetime, timezone, timedelta, mpesa_api, mail, Message, url_for, sender_email, sender_password, photos, reqparse, os
 import json
@@ -171,6 +171,7 @@ class Products(Resource):
         category = data.get('category')
         shop_id = data.get('shop_id')
         tag = data.get('get')
+        specs = data.get('specs')
 
 
         product = Product(name=name, description=description, price=price, quantity_available=quantity_available, category=category, shop_id=shop_id, tag=tag) 
@@ -179,8 +180,10 @@ class Products(Resource):
         image = ProductsImages(image_url=image_url, product=product)
         db.session.add(image)
         db.session.commit()
-
-        # product.image_url = json.loads(product.image_url)
+        for spec in specs:
+            specification = Specification(spec=spec, product=product)
+            db.session.add(specification)
+            db.session.commit()
 
         return make_response(
             product.to_dict(),
@@ -562,6 +565,7 @@ class OrderItems(Resource):
             order_id = data.get('order_id')
             product_id = data.get('product_id')
             quantity = data.get('quantity')
+            specification = data.get('specification')
 
             if None in [order_id, product_id, quantity]:
                 return {'message': 'Required field(s) missing'}, 400
@@ -576,7 +580,7 @@ class OrderItems(Resource):
             if not product:
                 return {'message': 'Product does not exist'}, 404
 
-            order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity)
+            order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=quantity, specification=specification)
             db.session.add(order_item)
             db.session.commit()
 

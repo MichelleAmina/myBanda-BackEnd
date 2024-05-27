@@ -114,9 +114,10 @@ class Product(db.Model, SerializerMixin):
     items = db.relationship('OrderItem', back_populates='product', lazy='select', cascade="all, delete-orphan")
     likes = db.relationship('LikedProduct', back_populates='product', lazy='select', cascade="all, delete-orphan")
     images = db.relationship('ProductsImages', back_populates='product', lazy='select', cascade="all, delete-orphan")
+    specifications = db.relationship('Specification', back_populates='product', lazy='select', cascade="all, delete-orphan")
     reviews = db.relationship('Review', back_populates='product', lazy='select', cascade="all, delete-orphan")
 
-    serialize_rules = ('-shop.products', '-items', '-images.product', '-reviews.product', '-likes.product', 'reviews.buyer.liked_products')
+    serialize_rules = ('-shop.products', '-items', '-images.product', '-specifications.product', '-reviews.product', '-likes.product', 'reviews.buyer.liked_products')
 
     def __repr__(self):
         return f'<Product {self.name} from shop {self.shop_id}>'
@@ -131,10 +132,20 @@ class ProductsImages(db.Model, SerializerMixin):
 
     serialize_rules = ('-product.images',)
 
+class Specification(db.Model, SerializerMixin):
+    id = db.Column(db.Integer, primary_key=True)
+
+    spec = db.Column(db.String)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    product = db.relationship('Product', back_populates='specifications')
+
+    serialize_rules = ('-product.specifications',)
+
 
 class OrderItem(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
+    specification = db.Column(db.String)
 
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     order = db.relationship("Order", back_populates='order_items')
