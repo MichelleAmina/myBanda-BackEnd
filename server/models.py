@@ -80,8 +80,8 @@ class Shop(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    logo_image_url = db.Column(db.String, nullable=False)
-    banner_image_url = db.Column(db.String, nullable=False)
+    logo_image_url = db.Column(db.String)
+    banner_image_url = db.Column(db.String)
     location = db.Column(db.String(250), nullable=True)
     contact = db.Column(db.String(50), nullable=True)
 
