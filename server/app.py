@@ -150,6 +150,13 @@ class ProductIndex(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
+    def delete(self, id):
+        product = Product.filter(Product.id==id).first()
+        db.session.delete(product)
+        db.session.commit()
+
+        return {'message': 'User and related data deleted successfully'},200
+
 class Products(Resource):
     def get(self):
         try:
