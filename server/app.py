@@ -151,7 +151,7 @@ class ProductIndex(Resource):
             return {"message": str(e)}, 500
 
     def delete(self, id):
-        product = Product.filter(Product.id==id).first()
+        product = Product.query.filter(Product.id==id).first()
         db.session.delete(product)
         db.session.commit()
 
