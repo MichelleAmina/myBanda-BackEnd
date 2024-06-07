@@ -27,7 +27,7 @@ load_dotenv()
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get('DATABASE_URI')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://banda_db2_user:8EGlg1MH9V6T2x6WJBQhALp5CY6VvSLA@dpg-cp461r0cmk4c73eerik0-a.frankfurt-postgres.render.com/banda_db2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://coin_sage_database_3def_user:c9aCoVrgAeDnCu3djBLqzSwxPHZWsGuk@dpg-cpepmo7109ks73fi5dh0-a.oregon-postgres.render.com/my_banda_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'hbb36bh6kby45][mg]'
 SECRET_KEY = app.config['SECRET_KEY'] = 'hbb36bh6kby45][mg]' 
